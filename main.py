@@ -8,9 +8,32 @@ from copy import deepcopy
 # ============================================================
 
 CSV_FILE = "housing.csv"
-TEST_RATIO = 0.2
-REPEATS = 3   # ile razy powtórzyć każdy zestaw parametrów
-MAX_ROWS = None  # np. 5000 jeśli chcesz szybciej testować; None = cały zbiór
+MAX_ROWS = None  # np. 500 jeśli chcesz szybciej testować; None = cały zbiór
+
+# Bazowa konfiguracja (ceteris paribus – zmienia się tylko jeden parametr)
+BASELINE = {
+    "epochs": 30,
+    "lr": 0.001,
+    "hidden_layers": [16],
+    "activation": "relu",
+    "test_ratio": 0.2,
+    "weight_init_scale": 1.0,
+    "repeats": 3,
+    "seed_base": 42,
+    "verbose": False,
+}
+
+# 8 parametrów × 4+ wartości do zbadania
+EXPERIMENTS = {
+    "epochs":            [10, 30, 50, 100,200],
+    "lr":                [0.01, 0.005, 0.001, 0.0001],
+    "hidden_layers":     [[], [16], [16, 8], [16, 8, 4], [16, 8, 4, 2], [32, 16], [32,32],[64,32]],
+    "neurons":           [[4], [8], [16], [32],[64]],
+    "activation":        ["relu", "sigmoid", "tanh", "leaky_relu"],
+    "test_ratio":        [0.1, 0.2, 0.3, 0.4,0.8],
+    "weight_init_scale": [0.01,0.1, 1.0, 2.0, 5.0],
+    "repeats":           [1, 3, 5, 10],
+}
 
 # ============================================================
 #  NARZĘDZIA
@@ -137,13 +160,13 @@ def build_regression_dataset(rows):
 def build_classification_dataset(rows):
     """
     Wejście:
-      cechy numeryczne + median_house_value
+      cechy numeryczne + median_house_value  (BEZ longitude/latitude)
     Wyjście:
       ocean_proximity
     """
     numeric_features = [
-        "longitude",
-        "latitude",
+        # longitude i latitude usunięte – uczenie ocean_proximity
+        # z dokładnych współrzędnych mija się z celem analitycznym
         "housing_median_age",
         "total_rooms",
         "total_bedrooms",
@@ -230,11 +253,17 @@ def sigmoid(x):
 def sigmoid_derivative_from_output(out):
     return out * (1.0 - out)
 
-def tanh(x):
+def tanh_act(x):
     return math.tanh(x)
 
 def tanh_derivative_from_output(out):
     return 1.0 - out * out
+
+def leaky_relu(x, alpha=0.01):
+    return x if x > 0 else alpha * x
+
+def leaky_relu_derivative(x, alpha=0.01):
+    return 1.0 if x > 0 else alpha
 
 def softmax(z):
     max_z = max(z)
@@ -247,9 +276,11 @@ def softmax(z):
 # ============================================================
 
 class MLP:
-    def __init__(self, layer_sizes, task="regression", activation="relu", seed=1):
+    def __init__(self, layer_sizes, task="regression", activation="relu",
+                 seed=1, weight_init_scale=1.0):
         """
         layer_sizes np. [13, 16, 8, 1] albo [9, 16, 5]
+        weight_init_scale – mnożnik limitu Xavier (domyślnie 1.0)
         """
         self.layer_sizes = layer_sizes
         self.task = task
@@ -263,8 +294,8 @@ class MLP:
             inp = layer_sizes[i]
             out = layer_sizes[i + 1]
 
-            # małe losowe wagi
-            limit = math.sqrt(6.0 / (inp + out))
+            # małe losowe wagi – limit Xavier z mnożnikiem
+            limit = math.sqrt(6.0 / (inp + out)) * weight_init_scale
             W = []
             for _ in range(out):
                 row = [self.rnd.uniform(-limit, limit) for _ in range(inp)]
@@ -281,9 +312,11 @@ class MLP:
         elif self.activation_name == "sigmoid":
             return sigmoid(x)
         elif self.activation_name == "tanh":
-            return tanh(x)
+            return tanh_act(x)
+        elif self.activation_name == "leaky_relu":
+            return leaky_relu(x)
         else:
-            raise ValueError("Nieznana aktywacja")
+            raise ValueError(f"Nieznana aktywacja: {self.activation_name}")
 
     def hidden_derivative_from_output(self, out, pre_act=None):
         if self.activation_name == "relu":
@@ -293,8 +326,10 @@ class MLP:
             return sigmoid_derivative_from_output(out)
         elif self.activation_name == "tanh":
             return tanh_derivative_from_output(out)
+        elif self.activation_name == "leaky_relu":
+            return leaky_relu_derivative(pre_act if pre_act is not None else out)
         else:
-            raise ValueError("Nieznana aktywacja")
+            raise ValueError(f"Nieznana aktywacja: {self.activation_name}")
 
     def forward(self, x):
         """
@@ -511,7 +546,7 @@ def summarize_classification_results(results):
         "best_seed": best["seed"]
     }
 
-def run_regression_experiment(rows, config, repeats=3):
+def run_regression_experiment(rows, config, repeats=3, test_ratio=0.2):
     print("\n" + "=" * 70)
     print("REGRESJA | konfiguracja:", config)
 
@@ -522,7 +557,7 @@ def run_regression_experiment(rows, config, repeats=3):
         seed = config["seed_base"] + repeat
 
         # podział
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, TEST_RATIO, seed=seed)
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_ratio, seed=seed)
 
         # standaryzacja X na podstawie treningu
         x_mean, x_std = fit_standardizer(X_train)
@@ -540,7 +575,8 @@ def run_regression_experiment(rows, config, repeats=3):
             layer_sizes=layer_sizes,
             task="regression",
             activation=config["activation"],
-            seed=seed
+            seed=seed,
+            weight_init_scale=config.get("weight_init_scale", 1.0)
         )
 
         print(f"\nPowtórzenie {repeat + 1}/{repeats}, seed={seed}")
@@ -597,7 +633,7 @@ def run_regression_experiment(rows, config, repeats=3):
 
     return summary
 
-def run_classification_experiment(rows, config, repeats=3):
+def run_classification_experiment(rows, config, repeats=3, test_ratio=0.2):
     print("\n" + "=" * 70)
     print("KLASYFIKACJA | konfiguracja:", config)
 
@@ -607,7 +643,7 @@ def run_classification_experiment(rows, config, repeats=3):
     for repeat in range(repeats):
         seed = config["seed_base"] + repeat
 
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, TEST_RATIO, seed=seed)
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_ratio, seed=seed)
 
         x_mean, x_std = fit_standardizer(X_train)
         X_train_n = transform_standardize(X_train, x_mean, x_std)
@@ -619,7 +655,8 @@ def run_classification_experiment(rows, config, repeats=3):
             layer_sizes=layer_sizes,
             task="classification",
             activation=config["activation"],
-            seed=seed
+            seed=seed,
+            weight_init_scale=config.get("weight_init_scale", 1.0)
         )
 
         print(f"\nPowtórzenie {repeat + 1}/{repeats}, seed={seed}")
@@ -656,6 +693,53 @@ def run_classification_experiment(rows, config, repeats=3):
     return summary
 
 # ============================================================
+#  EKSPORT WYNIKÓW DO CSV
+# ============================================================
+
+def export_results_csv(all_results, filename="results_summary.csv"):
+    """
+    Zapisuje listę wyników do pliku CSV.
+    Każdy element all_results to słownik z polami:
+      problem, param_name, param_value, oraz metryki.
+    """
+    if not all_results:
+        return
+
+    fieldnames = list(all_results[0].keys())
+
+    with open(filename, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in all_results:
+            writer.writerow(row)
+
+    print(f"\n>>> Wyniki zapisano do: {filename}")
+
+# ============================================================
+#  BUDOWANIE KONFIGURACJI CETERIS PARIBUS
+# ============================================================
+
+def make_config(baseline, param_name, param_value):
+    """
+    Tworzy konfigurację na bazie baseline, zmieniając TYLKO jeden parametr.
+    Parametr 'neurons' oznacza hidden_layers (liczbę neuronów w jednej warstwie).
+    """
+    cfg = dict(baseline)
+
+    if param_name == "neurons":
+        cfg["hidden_layers"] = param_value
+    elif param_name == "repeats":
+        # repeats nie jest częścią config – przekazywany oddzielnie
+        pass
+    elif param_name == "test_ratio":
+        # test_ratio nie jest częścią config – przekazywany oddzielnie
+        pass
+    else:
+        cfg[param_name] = param_value
+
+    return cfg
+
+# ============================================================
 #  GŁÓWNY PROGRAM
 # ============================================================
 
@@ -663,107 +747,122 @@ def main():
     rows = load_housing_data(CSV_FILE, max_rows=MAX_ROWS)
     print(f"Wczytano rekordów: {len(rows)}")
 
+    all_csv_rows = []  # wyniki do eksportu CSV
+    experiment_counter = 0
+    total_experiments = sum(len(vals) for vals in EXPERIMENTS.values()) * 2
+    # * 2 bo regresja + klasyfikacja
+
     # --------------------------------------------------------
-    # ZESTAWY PARAMETRÓW DO TESTÓW
+    # PĘTLA CETERIS PARIBUS: 8 parametrów × 4+ wartości
     # --------------------------------------------------------
-    # Możesz dodać więcej konfiguracji, jeśli prowadzący wymaga
-    # większej liczby przetestowanych parametrów.
-    regression_configs = [
-        {
-            "hidden_layers": [16],
-            "activation": "relu",
-            "lr": 0.001,
-            "epochs": 10,
-            "seed_base": 100,
-            "verbose": False
-        },
-        {
-            "hidden_layers": [32, 16],
-            "activation": "relu",
-            "lr": 0.001,
-            "epochs": 12,
-            "seed_base": 200,
-            "verbose": False
-        },
-        {
-            "hidden_layers": [16, 8],
-            "activation": "tanh",
-            "lr": 0.0007,
-            "epochs": 15,
-            "seed_base": 300,
-            "verbose": False
-        }
+    for param_name, param_values in EXPERIMENTS.items():
+        print("\n" + "#" * 70)
+        print(f"PARAMETR: {param_name}")
+        print("#" * 70)
+
+        for param_value in param_values:
+            experiment_counter += 1
+
+            # --- ustal repeats i test_ratio ---
+            if param_name == "repeats":
+                repeats = param_value
+            else:
+                repeats = BASELINE["repeats"]
+
+            if param_name == "test_ratio":
+                test_ratio = param_value
+            else:
+                test_ratio = BASELINE["test_ratio"]
+
+            config = make_config(BASELINE, param_name, param_value)
+
+            display_value = str(param_value)
+
+            # ===== REGRESJA =====
+            print(f"\n>>> [{experiment_counter}/{total_experiments}] "
+                  f"REGRESJA | {param_name} = {display_value}")
+
+            reg_summary = run_regression_experiment(
+                rows, config, repeats=repeats, test_ratio=test_ratio
+            )
+
+            all_csv_rows.append({
+                "problem": "regression",
+                "param_name": param_name,
+                "param_value": display_value,
+                "avg_train_rmse": f"{reg_summary['avg_train_rmse']:.4f}",
+                "avg_test_rmse": f"{reg_summary['avg_test_rmse']:.4f}",
+                "avg_train_mae": f"{reg_summary['avg_train_mae']:.4f}",
+                "avg_test_mae": f"{reg_summary['avg_test_mae']:.4f}",
+                "avg_train_r2": f"{reg_summary['avg_train_r2']:.4f}",
+                "avg_test_r2": f"{reg_summary['avg_test_r2']:.4f}",
+                "best_test_rmse": f"{reg_summary['best_test_rmse']:.4f}",
+                "best_test_r2": f"{reg_summary['best_test_r2']:.4f}",
+            })
+
+            experiment_counter += 1
+
+            # ===== KLASYFIKACJA =====
+            print(f"\n>>> [{experiment_counter}/{total_experiments}] "
+                  f"KLASYFIKACJA | {param_name} = {display_value}")
+
+            cls_summary = run_classification_experiment(
+                rows, config, repeats=repeats, test_ratio=test_ratio
+            )
+
+            all_csv_rows.append({
+                "problem": "classification",
+                "param_name": param_name,
+                "param_value": display_value,
+                "avg_train_rmse": "",
+                "avg_test_rmse": "",
+                "avg_train_mae": "",
+                "avg_test_mae": "",
+                "avg_train_r2": "",
+                "avg_test_r2": "",
+                "best_test_rmse": "",
+                "best_test_r2": "",
+                "avg_train_acc": f"{cls_summary['avg_train_acc']:.4f}",
+                "avg_test_acc": f"{cls_summary['avg_test_acc']:.4f}",
+                "best_test_acc": f"{cls_summary['best_test_acc']:.4f}",
+            })
+
+    # --------------------------------------------------------
+    # EKSPORT
+    # --------------------------------------------------------
+    # Uzupełnij brakujące klucze (regression nie ma acc, classification nie ma rmse)
+    all_keys = set()
+    for row in all_csv_rows:
+        all_keys.update(row.keys())
+    for row in all_csv_rows:
+        for key in all_keys:
+            if key not in row:
+                row[key] = ""
+
+    # Uporządkuj kolumny
+    ordered_keys = [
+        "problem", "param_name", "param_value",
+        "avg_train_rmse", "avg_test_rmse",
+        "avg_train_mae", "avg_test_mae",
+        "avg_train_r2", "avg_test_r2",
+        "best_test_rmse", "best_test_r2",
+        "avg_train_acc", "avg_test_acc", "best_test_acc",
     ]
+    # Dodaj klucze, które mogły powstać, ale nie są na liście
+    for k in sorted(all_keys):
+        if k not in ordered_keys:
+            ordered_keys.append(k)
 
-    classification_configs = [
-        {
-            "hidden_layers": [16],
-            "activation": "relu",
-            "lr": 0.001,
-            "epochs": 10,
-            "seed_base": 400,
-            "verbose": False
-        },
-        {
-            "hidden_layers": [32, 16],
-            "activation": "relu",
-            "lr": 0.001,
-            "epochs": 12,
-            "seed_base": 500,
-            "verbose": False
-        },
-        {
-            "hidden_layers": [16, 8],
-            "activation": "tanh",
-            "lr": 0.0007,
-            "epochs": 15,
-            "seed_base": 600,
-            "verbose": False
-        }
-    ]
+    # Przebuduj wiersze w kolejności kolumn
+    final_rows = []
+    for row in all_csv_rows:
+        final_rows.append({k: row.get(k, "") for k in ordered_keys})
 
-    # --------------------------------------------------------
-    # REGRESJA
-    # --------------------------------------------------------
-    print("\n" + "#" * 70)
-    print("BADANIE 1: REGRESJA - przewidywanie median_house_value")
-    print("#" * 70)
+    export_results_csv(final_rows, filename="results_summary.csv")
 
-    regression_summaries = []
-    for cfg in regression_configs:
-        summary = run_regression_experiment(rows, cfg, repeats=REPEATS)
-        regression_summaries.append((cfg, summary))
-
-    # --------------------------------------------------------
-    # KLASYFIKACJA
-    # --------------------------------------------------------
-    print("\n" + "#" * 70)
-    print("BADANIE 2: KLASYFIKACJA - przewidywanie ocean_proximity")
-    print("#" * 70)
-
-    classification_summaries = []
-    for cfg in classification_configs:
-        summary = run_classification_experiment(rows, cfg, repeats=REPEATS)
-        classification_summaries.append((cfg, summary))
-
-    # --------------------------------------------------------
-    # KOŃCOWE PORÓWNANIE
-    # --------------------------------------------------------
     print("\n" + "=" * 70)
-    print("KOŃCOWE PORÓWNANIE KONFIGURACJI")
+    print("WSZYSTKIE EKSPERYMENTY ZAKOŃCZONE")
     print("=" * 70)
-
-    print("\nREGRESJA:")
-    for i, (cfg, summ) in enumerate(regression_summaries, 1):
-        print(f"{i}. {cfg}")
-        print(f"   avg test RMSE = {summ['avg_test_rmse']:.2f}, avg test MAE = {summ['avg_test_mae']:.2f}, avg test R^2 = {summ['avg_test_r2']:.4f}")
-        print(f"   best test RMSE = {summ['best_test_rmse']:.2f}")
-
-    print("\nKLASYFIKACJA:")
-    for i, (cfg, summ) in enumerate(classification_summaries, 1):
-        print(f"{i}. {cfg}")
-        print(f"   avg test ACC = {summ['avg_test_acc']:.4f}")
-        print(f"   best test ACC = {summ['best_test_acc']:.4f}")
 
 if __name__ == "__main__":
     main()

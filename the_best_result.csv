@@ -1,0 +1,3 @@
+problem,config,avg_train_rmse,avg_test_rmse,avg_train_mae,avg_test_mae,avg_train_r2,avg_test_r2,best_test_rmse,best_test_r2,avg_train_acc,avg_test_acc,best_test_acc
+regression,"{'epochs': 50, 'lr': 0.005, 'hidden_layers': [64, 32], 'activation': 'relu', 'weight_init_scale': 1.0, 'seed_base': 999, 'verbose': False}",49658.6955,52694.1493,33614.2774,35332.7580,0.8154,0.7878,50733.9860,0.8064,,,
+classification,"{'epochs': 50, 'lr': 0.01, 'hidden_layers': [32, 32], 'activation': 'tanh', 'weight_init_scale': 1.0, 'seed_base': 999, 'verbose': False}",,,,,,,,,0.6945,0.6814,0.6935
