@@ -1,100 +1,194 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import KFold, cross_val_score
+
+from sklearn.model_selection import StratifiedKFold, KFold, cross_validate
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
 
 # ============================================================
-# 1. PRZYGOTOWANIE DANYCH
+# 1. WCZYTANIE DANYCH
 # ============================================================
-print("Przygotowywanie danych...")
 df = pd.read_csv("housing.csv")
 
-# --- KLASYFIKACJA ( ocean_proximity ) ---
+# ============================================================
+# 2. DEFINICJA ZADAŃ
+# ============================================================
+
+# ---------- KLASYFIKACJA ----------
+df_clf = df.copy()
+X_clf = df_clf.drop(columns=["ocean_proximity", "longitude", "latitude"])
+y_clf_raw = df_clf["ocean_proximity"]
+
 le = LabelEncoder()
-y_class = le.fit_transform(df["ocean_proximity"])
-# Usuwamy longitude i latitude, by model nie "zgadywał" położenia z mapy
-X_class = df.drop(["ocean_proximity", "longitude", "latitude"], axis=1)
+y_clf = le.fit_transform(y_clf_raw)
 
-# --- REGRESJA ( median_house_value ) ---
-df_reg = pd.get_dummies(df, columns=["ocean_proximity"])
+# ---------- REGRESJA ----------
+df_reg = df.copy()
+X_reg = df_reg.drop(columns=["median_house_value"])
 y_reg = df_reg["median_house_value"]
-X_reg = df_reg.drop(["median_house_value"], axis=1)
+
+num_cols_clf = X_clf.select_dtypes(include=[np.number]).columns.tolist()
+cat_cols_clf = X_clf.select_dtypes(exclude=[np.number]).columns.tolist()
+
+num_cols_reg = X_reg.select_dtypes(include=[np.number]).columns.tolist()
+cat_cols_reg = X_reg.select_dtypes(exclude=[np.number]).columns.tolist()
 
 # ============================================================
-# 2. KONFIGURACJA
+# 3. PREPROCESSING
 # ============================================================
-N_FOLDS = 5
-kf = KFold(n_splits=N_FOLDS, shuffle=True, random_state=42)
 
-# Parametry bazowe (p=2 jest domyślne dla euklidesowej, usunięte z bazy dla przejrzystości)
-BASE_PARAMS_CLF = {'n_neighbors': 5, 'weights': 'uniform', 'metric': 'euclidean'}
-BASE_PARAMS_REG = {'n_neighbors': 5, 'weights': 'uniform', 'metric': 'euclidean'}
+numeric_pipe = Pipeline([
+    ("imputer", SimpleImputer(strategy="median")),
+    ("scaler", StandardScaler())
+])
+
+categorical_pipe = Pipeline([
+    ("imputer", SimpleImputer(strategy="most_frequent")),
+    ("onehot", OneHotEncoder(handle_unknown="ignore"))
+])
+
+preprocessor_clf = ColumnTransformer(
+    transformers=[
+        ("num", numeric_pipe, num_cols_clf),
+        ("cat", categorical_pipe, cat_cols_clf)
+    ],
+    remainder="drop"
+)
+
+preprocessor_reg = ColumnTransformer(
+    transformers=[
+        ("num", numeric_pipe, num_cols_reg),
+        ("cat", categorical_pipe, cat_cols_reg)
+    ],
+    remainder="drop"
+)
 
 # ============================================================
-# 3. FUNKCJA EKSPERYMENTALNA
+# 4. WALIDACJA KRZYŻOWA
+# ============================================================
+cv_clf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+cv_reg = KFold(n_splits=5, shuffle=True, random_state=42)
+
+# ============================================================
+# 5. PARAMETRY BAZOWE
+# ============================================================
+BASE_PARAMS_CLF = {
+    "n_neighbors": 5,
+    "weights": "uniform",
+    "metric": "minkowski",
+    "p": 2,
+    "n_jobs": -1
+}
+
+BASE_PARAMS_REG = {
+    "n_neighbors": 5,
+    "weights": "uniform",
+    "metric": "minkowski",
+    "p": 2,
+    "n_jobs": -1
+}
+
+# ============================================================
+# 6. FUNKCJA OCENY
 # ============================================================
 all_results = []
 
-def analyze_parameter(param_name, values):
-    print(f"\n{'='*15} TEST PARAMETRU: {param_name} {'='*15}")
-    print(f"{'Wartość':>12} | {'Clf Acc (mean)':>14} | {'Reg R2 (mean)':>13}")
-    print("-" * 50)
+def evaluate_parameter(param_name, values):
+    print(f"\n{'='*20} TEST PARAMETRU: {param_name} {'='*20}")
 
     for val in values:
-        p_clf = BASE_PARAMS_CLF.copy()
-        p_clf[param_name] = val
-        p_reg = BASE_PARAMS_REG.copy()
-        p_reg[param_name] = val
+        params_clf = BASE_PARAMS_CLF.copy()
+        params_reg = BASE_PARAMS_REG.copy()
 
-        # Pipeline: Imputacja -> Skalowanie -> KNN
+        params_clf[param_name] = val
+        params_reg[param_name] = val
+
         clf_pipe = Pipeline([
-            ('imputer', SimpleImputer(strategy='median')),
-            ('scaler', StandardScaler()),
-            ('knn', KNeighborsClassifier(**p_clf))
+            ("preprocess", preprocessor_clf),
+            ("model", KNeighborsClassifier(**params_clf))
         ])
 
         reg_pipe = Pipeline([
-            ('imputer', SimpleImputer(strategy='median')),
-            ('scaler', StandardScaler()),
-            ('knn', KNeighborsRegressor(**p_reg))
+            ("preprocess", preprocessor_reg),
+            ("model", KNeighborsRegressor(**params_reg))
         ])
 
-        scores_clf = cross_val_score(clf_pipe, X_class, y_class, cv=kf, scoring='accuracy')
-        scores_reg = cross_val_score(reg_pipe, X_reg, y_reg, cv=kf, scoring='r2')
+        clf_scores = cross_validate(
+            clf_pipe, X_clf, y_clf, cv=cv_clf,
+            scoring={
+                "accuracy": "accuracy",
+                "balanced_accuracy": "balanced_accuracy",
+                "f1_macro": "f1_macro"
+            },
+            n_jobs=-1
+        )
 
-        acc_mean = scores_clf.mean()
-        r2_mean = scores_reg.mean()
+        reg_scores = cross_validate(
+            reg_pipe, X_reg, y_reg, cv=cv_reg,
+            scoring={
+                "r2": "r2",
+                "neg_mae": "neg_mean_absolute_error",
+                "neg_rmse": "neg_root_mean_squared_error"
+            },
+            n_jobs=-1
+        )
 
-        print(f"{str(val):>12} | {acc_mean:14.4f} | {r2_mean:13.4f}")
+        result = {
+            "model": "KNN",
+            "parametr": param_name,
+            "wartosc": str(val),
+            "clf_accuracy_mean": round(clf_scores["test_accuracy"].mean(), 4),
+            "clf_accuracy_std": round(clf_scores["test_accuracy"].std(), 4),
+            "clf_balanced_accuracy_mean": round(clf_scores["test_balanced_accuracy"].mean(), 4),
+            "clf_balanced_accuracy_std": round(clf_scores["test_balanced_accuracy"].std(), 4),
+            "clf_f1_macro_mean": round(clf_scores["test_f1_macro"].mean(), 4),
+            "clf_f1_macro_std": round(clf_scores["test_f1_macro"].std(), 4),
+            "reg_r2_mean": round(reg_scores["test_r2"].mean(), 4),
+            "reg_r2_std": round(reg_scores["test_r2"].std(), 4),
+            "reg_mae_mean": round(-reg_scores["test_neg_mae"].mean(), 2),
+            "reg_mae_std": round(reg_scores["test_neg_mae"].std(), 2),
+            "reg_rmse_mean": round(-reg_scores["test_neg_rmse"].mean(), 2),
+            "reg_rmse_std": round(reg_scores["test_neg_rmse"].std(), 2)
+        }
 
-        all_results.append({
-            'parametr': param_name,
-            'wartosc': str(val),
-            'clf_acc_mean': round(acc_mean, 4),
-            'reg_r2_mean': round(r2_mean, 4)
-        })
+        all_results.append(result)
+
+        print(
+            f"Wartość={val} | "
+            f"Acc={result['clf_accuracy_mean']:.4f} ± {result['clf_accuracy_std']:.4f} | "
+            f"BalAcc={result['clf_balanced_accuracy_mean']:.4f} | "
+            f"F1={result['clf_f1_macro_mean']:.4f} | "
+            f"R2={result['reg_r2_mean']:.4f} ± {result['reg_r2_std']:.4f} | "
+            f"MAE={result['reg_mae_mean']:.2f} | "
+            f"RMSE={result['reg_rmse_mean']:.2f}"
+        )
 
 # ============================================================
-# 4. URUCHOMIENIE ANALIZY (4 PARAMETRY)
+# 7. EKSPERYMENTY
 # ============================================================
 
 # 1. Liczba sąsiadów
-analyze_parameter('n_neighbors', [1, 3, 5, 10, 20, 50])
+evaluate_parameter("n_neighbors", [1, 3, 5, 10, 20, 50])
 
 # 2. Waga sąsiadów
-analyze_parameter('weights', ['uniform', 'distance'])
+evaluate_parameter("weights", ["uniform", "distance"])
 
 # 3. Metryka odległości
-analyze_parameter('metric', ['euclidean', 'manhattan', 'chebyshev'])
+evaluate_parameter("metric", ["euclidean", "manhattan", "chebyshev", "minkowski"])
 
-# 4. Rozmiar liścia (leaf_size) - Parametr wymagany przez instrukcję
-analyze_parameter('leaf_size', [10, 20, 30, 50, 100])
+# 4. Stopień wielomianu Minkowskiego — wymaga metric='minkowski'
+BASE_PARAMS_CLF["metric"] = "minkowski"
+BASE_PARAMS_REG["metric"] = "minkowski"
+evaluate_parameter("p", [1, 2, 3, 4])
+BASE_PARAMS_CLF["metric"] = "minkowski"
+BASE_PARAMS_REG["metric"] = "minkowski"
 
 # ============================================================
-# 5. ZAPIS DO CSV
+# 8. ZAPIS WYNIKÓW
 # ============================================================
-pd.DataFrame(all_results).to_csv("wyniki_knn.csv", index=False)
-print("\nWyniki zapisane do wyniki_knn.csv")
+results_df = pd.DataFrame(all_results)
+results_df.to_csv("wyniki_knn_poprawione.csv", index=False)
+print("\nZapisano wyniki do: wyniki_knn_poprawione.csv")
