@@ -1,0 +1,13 @@
+cecha,importance
+num__median_income,0.4822596840906007
+cat__ocean_proximity_INLAND,0.1437262871513168
+num__longitude,0.11081486136266808
+num__latitude,0.10672426307439627
+num__housing_median_age,0.05079973744766488
+num__population,0.030890815499943085
+num__total_rooms,0.02394084008539464
+num__total_bedrooms,0.020779220053892423
+num__households,0.01889477769796505
+cat__ocean_proximity_NEAR OCEAN,0.007012333551460613
+cat__ocean_proximity_<1H OCEAN,0.0033007162367893177
+cat__ocean_proximity_NEAR BAY,0.0008564637479082177
