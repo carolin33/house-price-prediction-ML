@@ -38,6 +38,9 @@ cat_cols_reg = X_reg.select_dtypes(exclude=[np.number]).columns.tolist()
 
 # ============================================================
 # 3. PREPROCESSING
+
+# StandardScaler jest zawarty w Pipeline, co eliminuje ryzyko
+# data leakage — scaler jest fitowany tylko na danych treningowych.
 # ============================================================
 
 numeric_pipe = Pipeline([
@@ -74,6 +77,7 @@ cv_reg = KFold(n_splits=5, shuffle=True, random_state=42)
 
 # ============================================================
 # 5. PARAMETRY BAZOWE
+
 # ============================================================
 BASE_PARAMS_CLF = {
     "n_neighbors": 5,
@@ -168,6 +172,12 @@ def evaluate_parameter(param_name, values):
 
 # ============================================================
 # 7. EKSPERYMENTY
+# Badane są trzy hiperparametry:
+#   - n_neighbors: kluczowy parametr kontrolujący bias-variance tradeoff
+#   - weights: sposób ważenia głosów sąsiadów
+#   - metric: miara odległości używana do wyznaczania sąsiadów
+#
+
 # ============================================================
 
 # 1. Liczba sąsiadów
@@ -179,16 +189,9 @@ evaluate_parameter("weights", ["uniform", "distance"])
 # 3. Metryka odległości
 evaluate_parameter("metric", ["euclidean", "manhattan", "chebyshev", "minkowski"])
 
-# 4. Stopień wielomianu Minkowskiego — wymaga metric='minkowski'
-BASE_PARAMS_CLF["metric"] = "minkowski"
-BASE_PARAMS_REG["metric"] = "minkowski"
-evaluate_parameter("p", [1, 2, 3, 4])
-BASE_PARAMS_CLF["metric"] = "minkowski"
-BASE_PARAMS_REG["metric"] = "minkowski"
-
 # ============================================================
 # 8. ZAPIS WYNIKÓW
 # ============================================================
 results_df = pd.DataFrame(all_results)
-results_df.to_csv("wyniki_knn_poprawione.csv", index=False)
-print("\nZapisano wyniki do: wyniki_knn_poprawione.csv")
+results_df.to_csv("wyniki_knn_final.csv", index=False)
+print("\nZapisano wyniki do: wyniki_knn_final.csv")
