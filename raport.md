@@ -44,7 +44,7 @@ Liczba epok określa, ile razy sieć przechodzi przez cały zbiór treningowy. Z
 | 100 | 56 305 | 56 754 | 39 228 | 39 838 | 0.7618 | 0.7581 | 55 829 | 0.7674 |
 | 200 | 54 953 | 55 578 | 37 985 | 38 530 | 0.7731 | 0.7681 | 54 861 | 0.7695 |
 
-**Analiza:** Widać wyraźny, monotoniczny spadek błędu RMSE i wzrost R² wraz ze wzrostem liczby epok. Przyrosty jednak maleją - różnica między 10 a 30 epokami (~3 000 RMSE) jest znacznie większa niż między 100 a 200 (~1 200 RMSE). To typowe zachowanie algorytmu gradientowego: na początku optymalizacja przebiega szybko w kierunku minimum, a potem zwalnia w okolicach punktu zbieżności.
+**Analiza:** Widać wyraźny, monotoniczny spadek błędu RMSE i wzrost R² wraz ze wzrostem liczby epok. Przyrosty jednak maleją - różnica między 10 a 30 epokami (\~3 000 RMSE) jest znacznie większa niż między 100 a 200 (~1 200 RMSE). To typowe zachowanie algorytmu gradientowego: na początku optymalizacja przebiega szybko w kierunku minimum, a potem zwalnia w okolicach punktu zbieżności.
 
 Warto zwrócić uwagę, że przy 200 epokach pojawia się niewielka rozbieżność między RMSE treningowym (54 953) a testowym (55 578). To sygnał początkowego przeuczenia - sieć zaczyna dopasowywać się do szumu w danych treningowych. W praktyce optymalnym wyborem jest **50–100 epok**, które dają bardzo dobry kompromis między jakością a ryzykiem overfittingu.
 
