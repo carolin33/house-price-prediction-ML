@@ -1,0 +1,17 @@
+parametr,wartosc,clf_acc_mean,reg_r2_mean
+C,0.1,0.6656,-0.0546
+C,1,0.6803,-0.0486
+C,10,0.6836,0.0072
+C,100,0.6863,0.3312
+kernel,linear,0.6528,0.0685
+kernel,rbf,0.6803,-0.0486
+kernel,poly,0.6407,-0.0417
+kernel,sigmoid,0.533,-0.0422
+gamma,scale,0.6803,-0.0486
+gamma,auto,0.6803,-0.0486
+gamma,0.01,0.6578,-0.053
+gamma,0.1,0.6776,-0.0486
+epsilon,0.01,0.6803,-0.0486
+epsilon,0.1,0.6803,-0.0486
+epsilon,0.5,0.6803,-0.0486
+epsilon,1.0,0.6803,-0.0486
