@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 
-from sklearn.model_selection import cross_validate, StratifiedKFold, KFold
+from sklearn.model_selection import StratifiedKFold, KFold, cross_validate
 from sklearn.svm import SVC, SVR
 from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
@@ -90,7 +90,7 @@ BASE_PARAMS_REG = {
 }
 
 # ============================================================
-# 6. FUNKCJA TESTUJACA
+# 6. FUNKCJA OCENY
 # ============================================================
 all_results = []
 
@@ -106,47 +106,92 @@ def evaluate_parameter(param_name, values):
         if param_name in params_reg:
             params_reg[param_name] = val
 
-        clf_pipe = Pipeline([
-            ("preprocess", preprocessor_clf),
-            ("model", SVC(**params_clf))
-        ])
+        # =====================================================
+        # KLASYFIKACJA
+        # epsilon nie dotyczy SVC, wiec pomijamy liczenie
+        # =====================================================
+        if param_name != "epsilon":
+            clf_pipe = Pipeline([
+                ("preprocess", preprocessor_clf),
+                ("model", SVC(**params_clf))
+            ])
 
+            clf_scores = cross_validate(
+                clf_pipe,
+                X_clf,
+                y_clf,
+                cv=cv_clf,
+                scoring={
+                    "accuracy": "accuracy",
+                    "balanced_accuracy": "balanced_accuracy",
+                    "f1_macro": "f1_macro"
+                },
+                n_jobs=-1
+            )
+
+            clf_accuracy_mean = round(clf_scores["test_accuracy"].mean(), 4)
+            clf_accuracy_std = round(clf_scores["test_accuracy"].std(), 4)
+            clf_balanced_accuracy_mean = round(clf_scores["test_balanced_accuracy"].mean(), 4)
+            clf_balanced_accuracy_std = round(clf_scores["test_balanced_accuracy"].std(), 4)
+            clf_f1_macro_mean = round(clf_scores["test_f1_macro"].mean(), 4)
+            clf_f1_macro_std = round(clf_scores["test_f1_macro"].std(), 4)
+        else:
+            clf_accuracy_mean = "-"
+            clf_accuracy_std = "-"
+            clf_balanced_accuracy_mean = "-"
+            clf_balanced_accuracy_std = "-"
+            clf_f1_macro_mean = "-"
+            clf_f1_macro_std = "-"
+
+        # =====================================================
+        # REGRESJA
+        # =====================================================
         reg_pipe = Pipeline([
             ("preprocess", preprocessor_reg),
             ("model", SVR(**params_reg))
         ])
-
-        clf_scores = cross_validate(
-            clf_pipe,
-            X_clf,
-            y_clf,
-            cv=cv_clf,
-            scoring="accuracy",
-            n_jobs=-1
-        )
 
         reg_scores = cross_validate(
             reg_pipe,
             X_reg,
             y_reg,
             cv=cv_reg,
-            scoring="r2",
+            scoring={
+                "r2": "r2",
+                "neg_mae": "neg_mean_absolute_error",
+                "neg_rmse": "neg_root_mean_squared_error"
+            },
             n_jobs=-1
         )
 
         result = {
+            "model": "SVM",
             "parametr": param_name,
             "wartosc": str(val),
-            "clf_acc_mean": round(clf_scores["test_score"].mean(), 4),
-            "reg_r2_mean": round(reg_scores["test_score"].mean(), 4)
+            "clf_accuracy_mean": clf_accuracy_mean,
+            "clf_accuracy_std": clf_accuracy_std,
+            "clf_balanced_accuracy_mean": clf_balanced_accuracy_mean,
+            "clf_balanced_accuracy_std": clf_balanced_accuracy_std,
+            "clf_f1_macro_mean": clf_f1_macro_mean,
+            "clf_f1_macro_std": clf_f1_macro_std,
+            "reg_r2_mean": round(reg_scores["test_r2"].mean(), 4),
+            "reg_r2_std": round(reg_scores["test_r2"].std(), 4),
+            "reg_mae_mean": round(-reg_scores["test_neg_mae"].mean(), 2),
+            "reg_mae_std": round(reg_scores["test_neg_mae"].std(), 2),
+            "reg_rmse_mean": round(-reg_scores["test_neg_rmse"].mean(), 2),
+            "reg_rmse_std": round(reg_scores["test_neg_rmse"].std(), 2)
         }
 
         all_results.append(result)
 
         print(
             f"Wartosc={val} | "
-            f"clf_acc_mean={result['clf_acc_mean']:.4f} | "
-            f"reg_r2_mean={result['reg_r2_mean']:.4f}"
+            f"Acc={result['clf_accuracy_mean']} | "
+            f"BalAcc={result['clf_balanced_accuracy_mean']} | "
+            f"F1={result['clf_f1_macro_mean']} | "
+            f"R2={result['reg_r2_mean']:.4f} +- {result['reg_r2_std']:.4f} | "
+            f"MAE={result['reg_mae_mean']:.2f} | "
+            f"RMSE={result['reg_rmse_mean']:.2f}"
         )
 
 # ============================================================
@@ -161,5 +206,5 @@ evaluate_parameter("epsilon", [0.01, 0.1, 0.5, 1.0])
 # 8. ZAPIS WYNIKOW
 # ============================================================
 results_df = pd.DataFrame(all_results)
-results_df.to_csv("wyniki_svm.csv", index=False)
-print("\nZapisano wyniki do: wyniki_svm.csv")
+results_df.to_csv("wyniki_svm_poprawione.csv", index=False)
+print("\nZapisano wyniki do: wyniki_svm_poprawione.csv")
