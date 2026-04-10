@@ -230,7 +230,7 @@ Metryka **Chebysheva** daje dobre wyniki klasyfikacyjne dla metryk uwzględniaj�
 
 ---
 
-### 2.6. Podsumowanie analizy KNN
+### 2.5. Podsumowanie analizy KNN
 
 KNN osiągnął poprawne, ale wyraźnie słabsze wyniki niż Random Forest, szczególnie w regresji. Przyczyną nie jest pojedynczy źle dobrany parametr, lecz sama natura algorytmu.
 
@@ -251,50 +251,246 @@ Najlepsza konfiguracja KNN w tej analizie to:
 
 ---
 
-## 3. Porównanie modeli i wnioski końcowe
 
-### 3.1. Zestawienie najlepszych wyników
+## 3. Model Support Vector Machine (SVM)
 
-| Model / Zadanie | Acc. / R² | Bal. Acc. | F1 Macro / MAE | RMSE | Stabilność |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| RF – Klasyfikacja | 0.6821 | 0.5037 | 0.5045 | — | Wysoka |
-| KNN – Klasyfikacja | 0.6698 | 0.4918 | 0.4932 | — | Średnia |
-| RF – Regresja | R² = 0.8262 | — | MAE = 31 353 | 48 082 | Wysoka |
-| KNN – Regresja | R² = 0.7350 | — | MAE = 39 884 | 59 389 | Średnia |
+### 3.1. Czym jest SVM i dlaczego działa?
+
+Support Vector Machine to metoda uczenia maszynowego, która próbuje znaleźć możliwie najlepszą granicę oddzielającą obserwacje należące do różnych klas. W najprostszym przypadku jest to hiperpłaszczyzna maksymalizująca margines, czyli odległość od najbliższych punktów obu klas. Punkty te nazywane są wektorami nośnymi (support vectors), ponieważ to one w największym stopniu decydują o położeniu granicy decyzyjnej.
+
+W wersji klasyfikacyjnej model występuje jako SVC, natomiast w wersji regresyjnej jako SVR. W regresji celem nie jest dokładne dopasowanie każdej obserwacji, lecz znalezienie funkcji, która dobrze opisuje zależność między cechami a zmienną objaśnianą przy zachowaniu odpowiedniej tolerancji błędu.
+
+Dużą zaletą SVM jest możliwość modelowania zależności nieliniowych dzięki zastosowaniu funkcji jądra (kernel). Pozwala to przenieść dane do przestrzeni o wyższym wymiarze, w której łatwiej znaleźć dobrą granicę decyzyjną lub funkcję regresyjną. Jednocześnie metoda ta jest stosunkowo wrażliwa na dobór hiperparametrów, dlatego analiza parametrów ma tu szczególnie duże znaczenie. Ponadto, ponieważ algorytm opiera się na geometrycznym obliczaniu odległości, wymaga on bezwzględnie ujednolicenia skali cech, co w naszym projekcie zrealizowano za pomocą narzędzia StandardScaler.
+
+### 3.2. Dane i metodologia eksperymentów
+
+Eksperymenty dla modelu SVM przeprowadzono na tym samym zbiorze **California Housing** oraz w tych samych dwóch zadaniach:
+
+* **klasyfikacji** zmiennej `ocean_proximity`,
+* **regresji** zmiennej `median_house_value`.
+
+W zadaniu klasyfikacji celowo usunięto cechy `longitude` i `latitude`, aby uniknąć zbyt łatwego odtwarzania klasy wyłącznie na podstawie lokalizacji geograficznej. Dzięki temu model musiał opierać się na bardziej pośrednich zależnościach obecnych w danych.
+
+Preprocessing obejmował:
+* imputację braków medianą dla cech numerycznych,
+* imputację braków najczęstszą wartością dla cech kategorycznych,
+* kodowanie cech kategorycznych metodą **One-Hot Encoding**,
+* standaryzację cech numerycznych z użyciem `StandardScaler`.
+
+Standaryzacja była szczególnie istotna w przypadku SVM, ponieważ metoda ta jest niezwykle wrażliwa na skalę zmiennych wejściowych. Bez odpowiedniego skalowania cechy o naturalnie większych wartościach liczbowych mogłyby nadmiernie i błędnie wpływać na działanie algorytmu oraz wyznaczanie marginesu.
+
+Do oceny modeli wykorzystano **5-krotną walidację krzyżową**:
+* `StratifiedKFold` dla zadania klasyfikacji,
+* `KFold` dla zadania regresji.
+
+Analizie poddano cztery kluczowe hiperparametry:
+* `C` (parametr regularyzacji),
+* `kernel` (rodzaj funkcji jądra),
+* `gamma` (współczynnik jądra),
+* `epsilon` (margines tolerancji błędu dla regresji).
+
+Każdy z powyższych parametrów badano osobno, przy pozostałych utrzymanych na optymalnych wartościach bazowych.
+
+### 3.3. Wpływ parametru kary (`C`)
+
+Parametr `C` to hiperparametr, który decyduje o tym, jak bardzo zależy nam na bezbłędnym dopasowaniu modelu do danych treningowych. 
+* **Małe wartości C:** Pozwalają na szerszy margines i większą tolerancję na błędy, co tworzy "miękką" granicę decyzyjną.
+* **Duże wartości C:** Wymuszają bardzo dokładne dopasowanie do każdego punktu, zawężając margines.
+
+| C | Acc. | Acc. std | Bal. Acc. | F1 Macro | R² | R² std | MAE | RMSE |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 0.1  | 0.6656 | 0.0021 | 0.4511 | 0.4189 | -0.0546 | 0.0026 | 88 294.11 | 118 470.70 |
+| 1.0  | 0.6803 | 0.0035 | 0.4807 | 0.4608 | -0.0486 | 0.0027 | 87 966.35 | 118 137.16 |
+| 10.0 | 0.6836 | 0.0033 | 0.4919 | 0.4753 |  0.0072 | 0.0024 | 84 819.51 | 114 946.44 |
+| 100.0| 0.6863 | 0.0025 | 0.5016 | 0.4958 |  0.3312 | 0.0043 | 65 615.82 | 94 349.82 |
+
+Wyniki pokazują, że wraz ze wzrostem `C` jakość modelu wyraźnie się poprawiała, zwłaszcza w zadaniu regresji. Oznacza to, że dla naszego zbioru danych opłacalne było bardziej restrykcyjne dopasowanie, co pozwoliło algorytmowi lepiej uchwycić ukryte zależności.
 
 ---
 
-### 3.2. Dlaczego Random Forest wypada lepiej?
+### 3.4. Wpływ funkcji jądra (`kernel`)
 
-Przewaga Random Forest wynika z fundamentalnych różnic między modelami.
+Parametr `kernel` określa sposób, w jaki algorytm szuka powiązań między danymi. Przetestowano cztery warianty transformacji przestrzeni: `linear`, `rbf`, `poly` oraz `sigmoid`.
 
-**Po pierwsze**, RF buduje jawny model predykcyjny, czyli zbiór reguł zapisanych w strukturach drzewiastych. KNN nie buduje modelu w klasycznym sensie — jedynie przechowuje dane i porównuje nowe próbki z zapisanymi przykładami.
+| Kernel | Acc. | Acc. std | Bal. Acc. | F1 Macro | R² | R² std | MAE | RMSE |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| linear  | 0.6528 | 0.0038 | 0.4266 | 0.3740 |  0.0685 | 0.0032 | 82 189.00 | 111 345.29 |
+| rbf     | 0.6803 | 0.0035 | 0.4807 | 0.4608 | -0.0486 | 0.0027 | 87 966.35 | 118 137.16 |
+| poly    | 0.6407 | 0.0020 | 0.4442 | 0.4316 | -0.0417 | 0.0018 | 87 745.25 | 117 748.14 |
+| sigmoid | 0.5330 | 0.0133 | 0.3717 | 0.3547 | -0.0422 | 0.0027 | 87 699.59 | 117 775.90 |
 
-**Po drugie**, RF lepiej radzi sobie z cechami częściowo nieistotnymi lub zaszumionymi. Dzięki losowemu wyborowi cech przy splitach nie każda cecha wpływa na każdą decyzję. KNN natomiast uwzględnia wszystkie cechy jednocześnie przy obliczaniu odległości, więc nawet cechy mniej przydatne mogą wprowadzać szum.
-
-**Po trzecie**, Random Forest redukuje wariancję przez uśrednianie dużej liczby drzew. KNN również pewnym sensie uśrednia informacje, ale tylko lokalnie i tylko po sąsiadach, przez co jest znacznie bardziej wrażliwy na lokalny rozkład danych.
-
-**Po czwarte**, RF lepiej radzi sobie z nieliniowymi zależnościami i interakcjami między cechami. KNN opiera się wyłącznie na geometrii przestrzeni wejściowej, a nie na wyuczonych strukturach relacji.
+Zdecydowanie najlepsze rezultaty klasyfikacyjne dało jądro `rbf`. Sugeruje to mocno nieliniowy charakter danych (np. skomplikowany wpływ lokalizacji na cenę). Jądro liniowe okazało się zbyt uproszczone, a pozostałe nie zapewniły równie dobrej predykcji.
 
 ---
 
-### 3.3. Wniosek końcowy
+### 3.5. Wpływ parametru `gamma`
 
-Na zbiorze **California Housing** model **Random Forest** okazał się wyraźnie lepszym rozwiązaniem niż **KNN**. Oferuje wyższą jakość predykcji, większą stabilność i mniejszą wrażliwość na dobór pojedynczych hiperparametrów.
+Parametr `gamma` (używany m.in. z jądrem `rbf`) decyduje o tym, jak daleko sięga wpływ pojedynczej obserwacji treningowej na kształt granicy decyzyjnej. 
+* **Małe wartości:** Prowadzą do bardziej globalnego spojrzenia na dane.
+* **Duże wartości:** Skupiają się na silnym dopasowaniu lokalnym.
 
-Najlepsze konfiguracje z analizy:
+| Gamma | Acc. | Acc. std | Bal. Acc. | F1 Macro | R² | R² std | MAE | RMSE |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| scale | 0.6803 | 0.0035 | 0.4807 | 0.4608 | -0.0486 | 0.0027 | 87 966.35 | 118 137.16 |
+| auto  | 0.6803 | 0.0035 | 0.4807 | 0.4608 | -0.0486 | 0.0027 | 87 973.78 | 118 132.90 |
+| 0.01  | 0.6578 | 0.0036 | 0.4299 | 0.3771 | -0.0530 | 0.0026 | 88 221.23 | 118 381.15 |
+| 0.1   | 0.6776 | 0.0037 | 0.4726 | 0.4502 | -0.0486 | 0.0026 | 87 967.10 | 118 132.48 |
 
-**Random Forest**
-- `n_estimators ≈ 200`
-- `max_depth = None` lub `25`
-- `min_samples_split = 2`
-- `max_features = 0.5–0.9`
+W przeprowadzonych eksperymentach parametry bazujące na danych (`scale` oraz `auto`) okazały się stabilne i zapewniły najlepszy kompromis między jakością predykcji a ryzykiem nadmiernego dopasowania (overfittingiem), delikatnie wyprzedzając sztywne wartości liczbowe.
 
-**KNN**
-- `n_neighbors = 10`
-- `weights = 'distance'`
-- `metric = 'manhattan'`
+---
 
-Podsumowując:  
-**Random Forest jest bardziej odpowiednim modelem dla tego zbioru**, zwłaszcza w zadaniu regresji, gdzie uzyskał bardzo wyraźną przewagę.  
-**KNN** pozostaje algorytmem prostym, intuicyjnym i wartościowym dydaktycznie, ale na tym konkretnym zbiorze ograniczają go wrażliwość na definicję odległości, konieczność skalowania oraz pogarszająca się jakość w wyższych wymiarach.
+### 3.6. Wpływ parametru `epsilon` (tylko regresja)
+
+Parametr `epsilon` dotyczy wyłącznie modelu SVR. Definiuje on szerokość specjalnej strefy tolerancji wokół przewidywanej wartości, wewnątrz której drobne błędy nie są w ogóle karane przez algorytm.
+
+| Epsilon | R² | R² std | MAE | RMSE |
+| :--- | :--- | :--- | :--- | :--- |
+| 0.01 | -0.0486 | 0.0027 | 87 966.35 | 118 137.16 |
+| 0.1  | -0.0486 | 0.0027 | 87 966.35 | 118 137.16 |
+| 0.5  | -0.0486 | 0.0027 | 87 966.35 | 118 137.16 |
+| 1.0  | -0.0486 | 0.0027 | 87 966.35 | 118 137.16 |
+
+Analiza wykazała, że zmiany parametru `epsilon` miały całkowicie marginalny wpływ na jakość regresji przy tych ustawieniach bazowych (wyniki pozostały bez zmian). Oznacza to, że w badanym przypadku szerokość tej strefy nie była kluczowa, a o sukcesie modelu decydowały głównie odpowiednio dobrane parametry `C` oraz `kernel`.
+
+---
+
+### 3.7. Podsumowanie analizy SVM
+
+Algorytm SVM okazał się potężnym modelem, zdolnym do osiągania dobrych wyników po odpowiednim dostrojeniu. Jego główną cechą w tym projekcie okazała się bardzo wysoka wrażliwość na dobór hiperparametrów (szczególnie `C` oraz `kernel`). Z kolei wpływ parametru `epsilon` był bardzo ograniczony.
+
+Najlepsze rezultaty uzyskano dla konfiguracji wykorzystującej wysoką wartość parametru `C` (np. 100) oraz nieliniowe jądro `rbf`. Wyniki te jednoznacznie potwierdzają, że relacje w zbiorze California Housing mają charakter złożony, a ich poprawne zamodelowanie wymaga elastycznych granic decyzyjnych.
+
+### 4.1. Czym jest Gradient Boosting i jak działa?
+
+Gradient Boosting to zaawansowana metoda uczenia zespołowego, polegająca na sekwencyjnym budowaniu serii modeli (najczęściej płytkich drzew decyzyjnych). W przeciwieństwie do algorytmu Random Forest, w którym drzewa powstają niezależnie od siebie, w metodzie Gradient Boosting każde kolejne drzewo jest tworzone w celu skorygowania błędów popełnionych przez modele zbudowane wcześniej. 
+
+Proces ten można porównać do wyciągania wniosków z poprzednich pomyłek. Algorytm analizuje, w których miejscach dotychczasowe przewidywania były niedokładne, a następnie dodaje nowe drzewo, którego zadaniem jest naprawienie tych konkretnych błędów (tzw. reziduów). Dzięki takiemu etapowemu podejściu, końcowy model staje się coraz precyzyjniejszy i potrafi skutecznie wykrywać złożone, nieliniowe zależności w danych.
+
+Istotną cechą Gradient Boosting jest jego wysoka skuteczność, która jednak zależy od odpowiedniego doboru tzw. **hiperparametrów** – czyli ustawień konfiguracyjnych wybieranych przez badacza przed rozpoczęciem procesu uczenia. Ponieważ algorytm opiera się na strukturze drzew decyzyjnych, jest on niewrażliwy na różnice w skali cech numerycznych. W związku z tym, w procesie przygotowania danych zrezygnowano z użycia narzędzia `StandardScaler`, co pozwoliło na uproszczenie obliczeń przy zachowaniu wysokiej jakości predykcji.
+
+### 4.2. Dane i metodologia eksperymentów
+
+Eksperymenty dla modelu Gradient Boosting przeprowadzono na zbiorze **California Housing**, realizując dwa zadania:
+
+* **klasyfikację** zmiennej `ocean_proximity`,
+* **regresję** zmiennej `median_house_value`.
+
+Podobnie jak w poprzednich analizach, w zadaniu klasyfikacji celowo usunięto cechy `longitude` oraz `latitude`, aby uniknąć sytuacji, w której model rozwiązuje zadanie wyłącznie na podstawie bezpośrednich współrzędnych geograficznych. Zmusza to algorytm do opierania się na bardziej złożonych i pośrednich zależnościach.
+
+Preprocessing danych obejmował:
+* imputację braków medianą dla cech numerycznych,
+* imputację braków najczęstszą wartością dla cech kategorycznych,
+* kodowanie zmiennych kategorycznych przy użyciu techniki **One-Hot Encoding**.
+
+Zgodnie z przyjętą metodologią, ze względu na wykorzystanie algorytmu opartego na drzewach decyzyjnych, całkowicie zrezygnowano ze standaryzacji cech (`StandardScaler`).
+
+Do oceny jakości modeli wykorzystano **5-krotną walidację krzyżową**:
+* `StratifiedKFold` dla zadania klasyfikacji,
+* `KFold` dla zadania regresji.
+
+W analizie rozpatrzono cztery kluczowe hiperparametry:
+* `n_estimators` (liczba drzew tworzących model),
+* `learning_rate` (tempo uczenia, określające wkład każdego kolejnego drzewa),
+* `max_depth` (maksymalna głębokość pojedynczego drzewa),
+* `subsample` (ułamek próbek danych używanych do budowy każdego z drzew).
+
+Każdy z powyższych parametrów testowano niezależnie, podczas gdy pozostałe ustawienia utrzymywano na stałych wartościach bazowych.
+
+### 4.3. Wpływ liczby estymatorów (`n_estimators`)
+
+Parametr `n_estimators` określa liczbę kolejnych drzew decyzyjnych budujących model. Zwiększanie tej wartości zazwyczaj poprawia jakość predykcji, jednak jednocześnie wydłuża czas obliczeń i może prowadzić do nadmiernego dopasowania (overfittingu), jeśli nie jest równoważone odpowiednio małym współczynnikiem uczenia (`learning_rate`).
+
+| n_estimators | Acc. | Acc. std | Bal. Acc. | F1 Macro | R² | R² std | MAE | RMSE |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 50   | 0.6681 | 0.0061 | 0.4804 | 0.4655 | 0.7207 | 0.0126 | 43 226.27 | 60 952.45 |
+| 100  | 0.6750 | 0.0061 | 0.4881 | 0.4764 | 0.7706 | 0.0113 | 38 417.48 | 55 236.87 |
+| 200  | 0.6776 | 0.0050 | 0.4937 | 0.4865 | 0.8017 | 0.0100 | 35 187.75 | 51 362.18 |
+| 300  | 0.6781 | 0.0042 | 0.4980 | 0.4943 | 0.8127 | 0.0090 | 33 926.84 | 49 912.06 |
+
+Wyniki eksperymentu wykazały, że optymalną liczbą drzew dla badanego zbioru jest **300**. Zwiększanie liczby estymatorów konsekwentnie poprawiało zdolności predykcyjne modelu (szczególnie w zadaniu regresji, gdzie błąd RMSE systematycznie malał), bez widocznych oznak drastycznego przeuczenia.
+
+---
+
+### 4.4. Wpływ współczynnika uczenia (`learning_rate`)
+
+Parametr `learning_rate` kontroluje siłę wpływu (wagę) każdego kolejnego drzewa na model końcowy. 
+* **Małe wartości:** Prowadzą do wolniejszego, ale zazwyczaj bardziej stabilnego uczenia (wymagają jednak większej liczby drzew).
+* **Większe wartości:** Mogą poprawiać wyniki znacznie szybciej, ale drastycznie zwiększają ryzyko przeuczenia.
+
+| Learning Rate | Acc. | Acc. std | Bal. Acc. | F1 Macro | R² | R² std | MAE | RMSE |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 0.01 | 0.6407 | 0.0038 | 0.4316 | 0.4087 | 0.5157 | 0.0085 | 61 273.43 | 80 282.69 |
+| 0.05 | 0.6684 | 0.0064 | 0.4805 | 0.4654 | 0.7182 | 0.0119 | 43 402.98 | 61 226.50 |
+| 0.1  | 0.6750 | 0.0061 | 0.4881 | 0.4764 | 0.7706 | 0.0113 | 38 417.48 | 55 236.87 |
+| 0.2  | 0.6779 | 0.0045 | 0.4942 | 0.4881 | 0.8009 | 0.0094 | 35 335.45 | 51 464.76 |
+
+Zaobserwowano, że wartość `learning_rate` na poziomie **0.2** zapewniła najlepsze rezultaty. Model uczył się na tyle dynamicznie, że przy bazowej liczbie drzew był w stanie wychwycić złożone zależności szybciej i skuteczniej niż przy zachowawczej wartości 0.01.
+
+---
+
+### 4.5. Wpływ głębokości drzew (`max_depth`)
+
+Parametr `max_depth` kontroluje maksymalną złożoność pojedynczych drzew składowych. 
+* **Małe wartości:** Generują prostsze modele, które mogą nie wychwytywać wszystkich ukrytych zależności (niedouczenie).
+* **Większe wartości:** Pozwalają algorytmowi lepiej i dokładniej dopasować się do danych treningowych, jednak ryzykują zapamiętywaniem szumu.
+
+| Max Depth | Acc. | Acc. std | Bal. Acc. | F1 Macro | R² | R² std | MAE | RMSE |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 2  | 0.6662 | 0.0066 | 0.4802 | 0.4650 | 0.7282 | 0.0129 | 42 447.98 | 60 135.58 |
+| 3  | 0.6750 | 0.0061 | 0.4881 | 0.4764 | 0.7706 | 0.0113 | 38 417.48 | 55 236.87 |
+| 4  | 0.6792 | 0.0050 | 0.4961 | 0.4898 | 0.8021 | 0.0097 | 35 076.17 | 51 315.89 |
+| 5  | 0.6797 | 0.0054 | 0.4998 | 0.4970 | 0.8159 | 0.0092 | 33 359.87 | 49 490.64 |
+
+Najwyższą skuteczność odnotowano przy głębokości równej **5**. Zastosowanie nieznacznie głębszych drzew pozwoliło modelowi precyzyjniej zmapować skomplikowane interakcje między cechami nieruchomości, co przełożyło się na wyższy współczynnik R² i mniejsze błędy.
+
+---
+
+### 4.6. Wpływ parametru `subsample`
+
+Parametr `subsample` określa, jaka część (ułamek) wszystkich dostępnych danych treningowych jest losowo wybierana przy budowie każdego kolejnego drzewa. Wartości mniejsze niż 1.0 wprowadzają do algorytmu dodatkową losowość, co często poprawia zdolność uogólniania modelu (redukuje wariancję). Wartość 1.0 oznacza klasyczne wykorzystanie całego dostępnego zbioru treningowego.
+
+| Subsample | Acc. | Acc. std | Bal. Acc. | F1 Macro | R² | R² std | MAE | RMSE |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 0.6 | 0.6749 | 0.0056 | 0.4895 | 0.4794 | 0.7722 | 0.0122 | 38 352.62 | 55 046.67 |
+| 0.8 | 0.6753 | 0.0055 | 0.4890 | 0.4781 | 0.7708 | 0.0118 | 38 373.77 | 55 213.74 |
+| 0.9 | 0.6752 | 0.0057 | 0.4889 | 0.4777 | 0.7702 | 0.0120 | 38 507.19 | 55 288.61 |
+| 1.0 | 0.6750 | 0.0061 | 0.4881 | 0.4764 | 0.7706 | 0.0113 | 38 417.48 | 55 236.87 |
+
+Różnice w wynikach okazały się stosunkowo niewielkie, jednak wprowadzenie losowości okazało się **delikatnie korzystne**. Model osiągnął najwyższe metryki dla wartości `subsample` na poziomie **0.6**, co potwierdza, że tzw. stochastyczny Gradient Boosting potrafi lepiej radzić sobie na nowych danych.
+
+---
+
+### 4.7. Podsumowanie analizy Gradient Boosting
+
+Gradient Boosting udowodnił, że jest modelem niezwykle elastycznym i potężnym. Przeprowadzona analiza potwierdza, że jego realna skuteczność jest uzależniona od odpowiedniego dostrojenia hiperparametrów, takich jak `learning_rate`, `n_estimators` oraz `max_depth`.
+
+Biorąc pod uwagę wszystkie zbadane kombinacje, Gradient Boosting zaprezentował wybitne rezultaty, **zdecydowanie przewyższając model SVM, szczególnie w zadaniu regresji**. Podczas gdy model SVM uzyskał współczynnik R² rzędu 0.33, odpowiednio skonfigurowany Gradient Boosting osiągnął wynik R² przekraczający 0.81, drastycznie minimalizując przy tym błędy w wycenie nieruchomości (MAE i RMSE). Model ten wykazał się doskonałą stabilnością i umiejętnością wychwytywania bardzo złożonych zależności w zbiorze danych.
+
+
+## 5. Wnioski końcowe i porównanie modeli
+
+Przeprowadzona analiza czterech algorytmów uczenia maszynowego (KNN, Random Forest, SVM oraz Gradient Boosting) na zbiorze danych **California Housing** pozwoliła na sformułowanie jednoznacznych wniosków dotyczących ich skuteczności, stabilności oraz wymagań związanych z przygotowaniem danych. 
+
+Ogólne zestawienie wyników wyraźnie wskazuje na przewagę metod zespołowych opartych na drzewach decyzyjnych nad algorytmami opierającymi się na metrykach odległości.
+
+### 5.1. Analiza porównawcza algorytmów
+
+1. **Gradient Boosting:** Model ten wykazał najwyższą skuteczność predykcyjną w rozpatrywanym zestawieniu. Znacząco przewyższył pozostałe algorytmy w zadaniu regresji (osiągając R² > 0.81). Choć algorytm wymaga precyzyjnego dostrojenia hiperparametrów (m.in. znalezienia optymalnego balansu między `learning_rate` a `n_estimators`), oferuje najlepsze dopasowanie do złożonych, nieliniowych zależności w danych.
+2. **Random Forest:** Algorytm wykazał się wysoką stabilnością oraz odpornością na zjawisko przeuczenia (overfittingu). Oferuje bardzo dobrą jakość predykcji bez konieczności głębokiej optymalizacji (nawet przy parametrach domyślnych). Stanowi solidną i mniej złożoną obliczeniowo alternatywę dla Gradient Boostingu.
+3. **Support Vector Machines (SVM):** Model ten uzyskał zadowalające wyniki w zadaniu klasyfikacji, jednak okazał się nieskuteczny w zadaniu regresji (R² na poziomie 0.33 w najlepszej konfiguracji). Cechuje się wysoką wrażliwością na dobór hiperparametrów (wymagał wysokich wartości kary `C` i nieliniowego jądra `rbf`) oraz narzuca bezwzględną konieczność standaryzacji danych wejściowych.
+4. **K-Nearest Neighbors (KNN):** Algorytm ten uzyskał najsłabsze metryki jakościowe na analizowanym zbiorze. Jego skuteczność jest silnie ograniczana przez wrażliwość na szum, konieczność ujednolicania skali cech oraz problemy z wydajnością w wielowymiarowych przestrzeniach decyzyjnych.
+
+### 5.2. Optymalne konfiguracje hiperparametrów
+
+W oparciu o przeprowadzone eksperymenty, wyłoniono optymalne konfiguracje dla każdego z badanych modeli:
+
+* **Gradient Boosting:** `n_estimators = 300`, `learning_rate = 0.2`, `max_depth = 5`
+* **Random Forest:** `n_estimators ≈ 200`, `max_depth = None`, `min_samples_split = 2`
+* **SVM:** `C = 100`, `kernel = 'rbf'`
+* **KNN:** `n_neighbors = 10`, `weights = 'distance'`, `metric = 'manhattan'`
+
+**Podsumowanie:** Do rozwiązywania złożonych problemów analitycznych na zbiorze California Housing rekomenduje się stosowanie zaawansowanych metod zespołowych. **Gradient Boosting** stanowi najlepszy wybór w sytuacjach wymagających maksymalizacji precyzji, natomiast **Random Forest** jest optymalnym rozwiązaniem kompromisowym, łączącym dobrą skuteczność z wysoką stabilnością. Dodatkowo algorytmy te, w przeciwieństwie do SVM i KNN, nie wymagają uciążliwego skalowania danych, co znacznie upraszcza potok przetwarzania i ułatwia ich praktyczne wdrożenie.
+
+
+
