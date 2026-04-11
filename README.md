@@ -22,3 +22,13 @@ The repository is designed as a space for experimenting with different regressio
 - NumPy
 - scikit-learn
 
+---
+
+## 📊 Models Analyzed
+In this project, we performed an extensive evaluation of four different machine learning algorithms. Each model was tested for its ability to handle both **Regression** (predicting house prices) and **Classification** (predicting ocean proximity).
+
+* **Random Forest** – A robust ensemble method used as a benchmark for stability and handling non-linear data.
+* **Gradient Boosting** – The top-performing model in our regression tasks, providing the highest precision through iterative error correction.
+* **Support Vector Machines (SVM)** – Tested with various kernels (RBF, Linear) to find optimal decision boundaries in high-dimensional space.
+* **K-Nearest Neighbors (KNN)** – Used to analyze the geometric relationships and local clusters within the housing data.
+
