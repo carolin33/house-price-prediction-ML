@@ -2,6 +2,21 @@
 
 ## Wstęp i opis badanych problemów
 
+Niniejsze opracowanie stanowi analizę porównawczą skuteczności wybranych metod uczenia maszynowego w rozwiązywaniu dwóch fundamentalnych problemów analitycznych: regresji wartości ciągłych oraz klasyfikacji wieloklasowej. Badania oparto na zbiorze danych California Housing, który od lat służy jako benchmark w dziedzinie modelowania predykcyjnego, oferując złożone zależności nieliniowe oraz wyzwania związane z interpretacją cech przestrzennych i demograficznych.
+
+Głównym celem projektu jest zbadanie, jak zmiany kluczowych hiperparametrów wpływają na zdolność generalizacji modeli. W pracy skupiono się na trzech odmiennych architekturach:
+
+- Sztucznych Sieciach Neuronowych (SSN) typu MLP, zaimplementowanych niskopoziomowo, co pozwoliło na precyzyjną kontrolę procesu optymalizacji.
+- Lasach Losowych (Random Forest), reprezentujących podejście zespołowe oparte na drzewach decyzyjnych.
+- Algorytmie k-Najbliższych Sąsiadów (k-NN), służącym jako punkt odniesienia dla metod opartych na podobieństwie lokalnym.
+
+W ramach projektu zdefiniowano dwa równoległe zadania:
+
+- Problem Regresji (Estymacja cen): Próba przewidzenia mediany wartości nieruchomości (median_house_value). Jest to zadanie o wysokiej złożoności ze względu na silną nieliniowość rynku nieruchomości. Sukces modelu mierzony jest zdolnością do minimalizacji błędu średniokwadratowego (RMSE) oraz maksymalizacją współczynnika determinacji (R2), który w najlepszych konfiguracjach sieci neuronowych osiągnął poziom powyżej 0.78.
+- Problem Klasyfikacji (Lokalizacja względem oceanu): Przewidywanie zmiennej kategorycznej ocean_proximity (5 klas). Wyjątkowość tego zadania polega na celowym usunięciu współrzędnych geograficznych. Decyzja ta wymusza na modelach poszukiwanie ukrytych wzorców w strukturze demograficznej i standardzie budynków, zamiast prostego przypisania klasy na podstawie mapy. Jest to problem trudniejszy, gdzie naturalna bariera dokładności (Accuracy) oscyluje wokół 69%, co wynika z dużego nakładania się cech różnych lokalizacji.
+
+Zastosowanie podejścia ceteris paribus (zmiana jednego parametru przy stałych pozostałych) miało na celu nie tylko znalezienie "najlepszego wyniku", ale przede wszystkim zrozumienie mechaniki uczenia
+
 ## Przegląd literatury
 
   W ramach prac nad projektem przeprowadzono szczegółowy przegląd literatury przedmiotu oraz analizę rozwiązań dostępnych na platformach analitycznych takich jak Kaggle oraz GitHub. Analiza ta pozwoliła na identyfikację dominujących trendów metodologicznych oraz ustalenie punktów odniesienia dla skuteczności budowanych modeli predykcyjnych. 
