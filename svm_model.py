@@ -1,5 +1,4 @@
-﻿# -*- coding: utf-8 -*-
-import pandas as pd
+﻿import pandas as pd
 import numpy as np
 
 from sklearn.model_selection import StratifiedKFold, KFold, cross_validate

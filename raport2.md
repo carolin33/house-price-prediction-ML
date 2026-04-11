@@ -158,7 +158,7 @@ Najważniejszą cechą KNN jest silna zależność od geometrii przestrzeni cech
 
 W kodzie zastosowano `StandardScaler` wewnątrz `Pipeline`, co jest metodologicznie poprawne, ponieważ eliminuje ryzyko **data leakage** — skalowanie jest dopasowywane wyłącznie na częściach treningowych w ramach walidacji krzyżowej.
 
-
+---
 
 ### 2.2. Wpływ liczby sąsiadów (`n_neighbors`)
 
@@ -251,7 +251,6 @@ Najlepsza konfiguracja KNN w tej analizie to:
 
 ---
 
-
 ## 3. Model Support Vector Machine (SVM)
 
 ### 3.1. Czym jest SVM i dlaczego działa?
@@ -261,6 +260,8 @@ Support Vector Machine to metoda uczenia maszynowego, która próbuje znaleźć 
 W wersji klasyfikacyjnej model występuje jako SVC, natomiast w wersji regresyjnej jako SVR. W regresji celem nie jest dokładne dopasowanie każdej obserwacji, lecz znalezienie funkcji, która dobrze opisuje zależność między cechami a zmienną objaśnianą przy zachowaniu odpowiedniej tolerancji błędu.
 
 Dużą zaletą SVM jest możliwość modelowania zależności nieliniowych dzięki zastosowaniu funkcji jądra (kernel). Pozwala to przenieść dane do przestrzeni o wyższym wymiarze, w której łatwiej znaleźć dobrą granicę decyzyjną lub funkcję regresyjną. Jednocześnie metoda ta jest stosunkowo wrażliwa na dobór hiperparametrów, dlatego analiza parametrów ma tu szczególnie duże znaczenie. Ponadto, ponieważ algorytm opiera się na geometrycznym obliczaniu odległości, wymaga on bezwzględnie ujednolicenia skali cech, co w naszym projekcie zrealizowano za pomocą narzędzia StandardScaler.
+
+---
 
 ### 3.2. Dane i metodologia eksperymentów
 
@@ -289,7 +290,9 @@ Analizie poddano cztery kluczowe hiperparametry:
 * `gamma` (współczynnik jądra),
 * `epsilon` (margines tolerancji błędu dla regresji).
 
-Każdy z powyższych parametrów badano osobno, przy pozostałych utrzymanych na optymalnych wartościach bazowych.
+Każdy z powyższych parametrów badano osobno, przy pozostałych utrzymanych na wartościach referencyjnych.
+
+---
 
 ### 3.3. Wpływ parametru kary (`C`)
 
@@ -319,7 +322,8 @@ Parametr `kernel` określa sposób, w jaki algorytm szuka powiązań między dan
 | poly    | 0.6407 | 0.0020 | 0.4442 | 0.4316 | -0.0417 | 0.0018 | 87 745.25 | 117 748.14 |
 | sigmoid | 0.5330 | 0.0133 | 0.3717 | 0.3547 | -0.0422 | 0.0027 | 87 699.59 | 117 775.90 |
 
-Zdecydowanie najlepsze rezultaty klasyfikacyjne dało jądro `rbf`. Sugeruje to mocno nieliniowy charakter danych (np. skomplikowany wpływ lokalizacji na cenę). Jądro liniowe okazało się zbyt uproszczone, a pozostałe nie zapewniły równie dobrej predykcji.
+
+Zdecydowanie najlepsze rezultaty w zadaniu klasyfikacji dało jądro `rbf`, co sugeruje nieliniowy charakter zależności odpowiedzialnych za rozróżnianie klas `ocean_proximity`. W zadaniu regresji lepszy wynik uzyskano natomiast dla jądra `linear`, co pokazuje, że optymalny wybór funkcji jądra może zależeć od rodzaju rozwiązywanego problemu.
 
 ---
 
@@ -357,9 +361,13 @@ Analiza wykazała, że zmiany parametru `epsilon` miały całkowicie marginalny 
 
 ### 3.7. Podsumowanie analizy SVM
 
-Algorytm SVM okazał się potężnym modelem, zdolnym do osiągania dobrych wyników po odpowiednim dostrojeniu. Jego główną cechą w tym projekcie okazała się bardzo wysoka wrażliwość na dobór hiperparametrów (szczególnie `C` oraz `kernel`). Z kolei wpływ parametru `epsilon` był bardzo ograniczony.
+Algorytm SVM okazał się wszechstronnym modelem, zdolnym do osiągania dobrych wyników po odpowiednim dostrojeniu. Jego główną cechą w tym projekcie okazała się bardzo wysoka wrażliwość na dobór hiperparametrów (szczególnie `C` oraz `kernel`). Z kolei wpływ parametru `epsilon` był bardzo ograniczony.
 
 Najlepsze rezultaty uzyskano dla konfiguracji wykorzystującej wysoką wartość parametru `C` (np. 100) oraz nieliniowe jądro `rbf`. Wyniki te jednoznacznie potwierdzają, że relacje w zbiorze California Housing mają charakter złożony, a ich poprawne zamodelowanie wymaga elastycznych granic decyzyjnych.
+
+---
+
+## 4. Gradient Boosting
 
 ### 4.1. Czym jest Gradient Boosting i jak działa?
 
@@ -368,6 +376,8 @@ Gradient Boosting to zaawansowana metoda uczenia zespołowego, polegająca na se
 Proces ten można porównać do wyciągania wniosków z poprzednich pomyłek. Algorytm analizuje, w których miejscach dotychczasowe przewidywania były niedokładne, a następnie dodaje nowe drzewo, którego zadaniem jest naprawienie tych konkretnych błędów (tzw. reziduów). Dzięki takiemu etapowemu podejściu, końcowy model staje się coraz precyzyjniejszy i potrafi skutecznie wykrywać złożone, nieliniowe zależności w danych.
 
 Istotną cechą Gradient Boosting jest jego wysoka skuteczność, która jednak zależy od odpowiedniego doboru tzw. **hiperparametrów** – czyli ustawień konfiguracyjnych wybieranych przez badacza przed rozpoczęciem procesu uczenia. Ponieważ algorytm opiera się na strukturze drzew decyzyjnych, jest on niewrażliwy na różnice w skali cech numerycznych. W związku z tym, w procesie przygotowania danych zrezygnowano z użycia narzędzia `StandardScaler`, co pozwoliło na uproszczenie obliczeń przy zachowaniu wysokiej jakości predykcji.
+
+---
 
 ### 4.2. Dane i metodologia eksperymentów
 
@@ -396,6 +406,8 @@ W analizie rozpatrzono cztery kluczowe hiperparametry:
 * `subsample` (ułamek próbek danych używanych do budowy każdego z drzew).
 
 Każdy z powyższych parametrów testowano niezależnie, podczas gdy pozostałe ustawienia utrzymywano na stałych wartościach bazowych.
+
+---
 
 ### 4.3. Wpływ liczby estymatorów (`n_estimators`)
 
@@ -463,10 +475,11 @@ Różnice w wynikach okazały się stosunkowo niewielkie, jednak wprowadzenie lo
 
 ### 4.7. Podsumowanie analizy Gradient Boosting
 
-Gradient Boosting udowodnił, że jest modelem niezwykle elastycznym i potężnym. Przeprowadzona analiza potwierdza, że jego realna skuteczność jest uzależniona od odpowiedniego dostrojenia hiperparametrów, takich jak `learning_rate`, `n_estimators` oraz `max_depth`.
+Wyniki uzyskane podczas badania algorytmu Gradient Boosting potwierdzają jego wysoką skuteczność w modelowaniu cen nieruchomości. Model ten charakteryzuje się znaczną precyzją w odwzorowywaniu nieliniowych zależności oraz stabilnością predykcji, co znajduje odzwierciedlenie w wysokich wartościach współczynnika determinacji R² oraz niskich błędach średniokwadratowych.
 
-Biorąc pod uwagę wszystkie zbadane kombinacje, Gradient Boosting zaprezentował wybitne rezultaty, **zdecydowanie przewyższając model SVM, szczególnie w zadaniu regresji**. Podczas gdy model SVM uzyskał współczynnik R² rzędu 0.33, odpowiednio skonfigurowany Gradient Boosting osiągnął wynik R² przekraczający 0.81, drastycznie minimalizując przy tym błędy w wycenie nieruchomości (MAE i RMSE). Model ten wykazał się doskonałą stabilnością i umiejętnością wychwytywania bardzo złożonych zależności w zbiorze danych.
+Efektywność tej metody wynika z iteracyjnej procedury optymalizacji, w której każdy kolejny estymator redukuje residua generowane przez sumę poprzednich modeli. Mimo wrażliwości na dobór parametrów, takich jak tempo uczenia (`learning_rate`) oraz liczba estymatorów (`n_estimators`), Gradient Boosting wykazuje wysoką zdolność do generalizacji wiedzy. Pozwala to na trafne prognozowanie wartości rynkowych przy jednoczesnym zachowaniu odporności na szum w danych treningowych.
 
+---
 
 ## 5. Wnioski końcowe i porównanie modeli
 
