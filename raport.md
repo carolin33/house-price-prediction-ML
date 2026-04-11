@@ -4,6 +4,20 @@
 
 ## Przegląd literatury
 
+  W ramach prac nad projektem przeprowadzono szczegółowy przegląd literatury przedmiotu oraz analizę rozwiązań dostępnych na platformach analitycznych takich jak Kaggle oraz GitHub. Analiza ta pozwoliła na identyfikację dominujących trendów metodologicznych oraz ustalenie punktów odniesienia dla skuteczności budowanych modeli predykcyjnych. 
+  
+  Powszechnym podejściem w problematyce estymacji cen nieruchomości w Kalifornii jest wykorzystanie zaawansowanych algorytmów uczenia maszynowego, w szczególności metod zespołowych, takich jak Random Forest oraz XGBoost. Opracowania te wykazują, że modele oparte na drzewach decyzyjnych osiągają stabilną skuteczność w przedziale od 0.80 do 0.84. W przypadku alternatywnych rozwiązań wykorzystujących sztuczne sieci neuronowe (ANN), badacze wskazują na konieczność stosowania głębokich architektur typu wielowarstwowy perceptron oraz rygorystycznego skalowania danych wejściowych, co jest niezbędne dla poprawnego procesu uczenia. Publikacje naukowe potwierdzają, że sieci neuronowe (szczególnie wielowarstwowe perceptrony) wykazują znacznie wyższą zdolność adaptacyjną do nieliniowych trendów rynkowych niż klasyczna regresja liniowa. 
+  
+  Kluczowym wnioskiem płynącym z analizy porównawczej jest dominująca rola zmiennej dochodu mieszkańca (median_income), która w większości modeli posiada największą moc predykcyjną, przewyższając parametry czysto fizyczne budynku, takie jak liczba pokoi. Istotnym aspektem poruszanym w literaturze jest również problem „szumu informacyjnego” wynikający ze specyfiki zbioru danych. Badania wskazują, że sztuczne ograniczenie wartości mediany ceny do 500 000 USD stanowi wyzwanie metodologiczne – wielu autorów decyduje się na eliminację tych rekordów, aby uniknąć błędów systematycznych (tzw. bias) i uzyskać bardziej realistyczne prognozy. 
+  
+  Wiele analiz dowodzi, że przejście do zaawansowanych modeli nieliniowych wymaga zastosowania celowej inżynierii cech. Za najbardziej efektywne uznaje się tworzenie wskaźników relatywnych, takich jak liczba pokoi na gospodarstwo domowe (rooms_per_household) czy zagęszczenie populacji. Jak zauważa E. Clark, kluczem do sukcesu jest inżynieria cech specyficzna dla branży nieruchomości (ang. Domain-Specific Feature Engineering), np. analiza proporcji sypialni do ogólnej liczby pokoi, co pozwala modelowi lepiej odróżnić domy rodzinne od obiektów inwestycyjnych. 
+  
+  Ostatecznie, badacze są zgodni, że lokalizacja geograficzna w ścisłym powiązaniu z bliskością oceanu (ocean_proximity) stanowi drugi najważniejszy czynnik determinujący wartość nieruchomości. Modele klasy boostingowej, w szczególności XGBoost, najlepiej radzą sobie z wychwytywaniem nieliniowych zależności przestrzennych. Nowoczesne podejścia testują również wykorzystanie struktur piramidalnych sieci neuronowych (np. o architekturze 8-24-12-6-1), które poprzez stopniową kompresję informacji pozwalają na precyzyjną ekstrakcję kluczowych danych. 
+  
+  Eksperci wskazują także, że najwyższym standardem optymalizacji (pozwalającym osiągnąć błąd MAE poniżej 26 000 USD) jest tzw. geokodowanie odwrotne, czyli zamiana współrzędnych na nazwy konkretnych miast. Dzięki temu model „rozumie” lokalną specyfikę rynków (np. prestiż danej dzielnicy), co w połączeniu z cechami wielomianowymi pozwala na najdokładniejsze odwzorowanie cen na tym zbiorze danych. 
+ 
+ 
+
 ## Badanie działania Sztucznych Sieci Neuronowych SSN
 
 ### Metodyka i parametry badawcze
