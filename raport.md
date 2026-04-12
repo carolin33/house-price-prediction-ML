@@ -862,3 +862,18 @@ W przypadku algorytmu k-Najbliższych Sąsiadów, wynik R2=0.73 przy zastosowani
 
 Do rozwiązywania złożonych problemów analitycznych na zbiorze California Housing rekomenduje się stosowanie zaawansowanych metod zespołowych. **Gradient Boosting** stanowi najlepszy wybór w sytuacjach wymagających maksymalizacji precyzji, natomiast **Random Forest** jest optymalnym rozwiązaniem kompromisowym, łączącym dobrą skuteczność z wysoką stabilnością. Dodatkowo algorytmy te, w przeciwieństwie do SVM i KNN, nie wymagają uciążliwego skalowania danych, co znacznie upraszcza potok przetwarzania i ułatwia ich praktyczne wdrożenie.
 
+**Bibliografia:** 
+https://www.kaggle.com/code/nnandan15/california-housing-prices-random-forest
+https://www.kaggle.com/code/syedmaazml/california-housing-price-prediction-random-forest
+https://www.kaggle.com/code/matthewchuang/predicting-house-prices-with-machine-learning-knn
+https://www.kaggle.com/code/merehansheikh/support-vector-machine-svm-house-price-predict
+https://www.kaggle.com/code/tasfiqmahmud/gradient-boosting-regressor-r2-0-90
+https://www.kaggle.com/code/camnugent/gradient-boosting-and-parameter-tuning-in-r
+https://www.kaggle.com/code/serkansaygl/california-house-price-prediction-ai
+https://github.com/leventtcaan/california-house-price-predictor
+https://www.kaggle.com/code/theanuragchauhan/california-house-price-prediction.
+https://www.kaggle.com/code/mert034/california-housing-prices-regressor
+https://www.kaggle.com/code/servetvarol/xgboostregressor
+https://www.ijorai.reapress.com/journal/article/view/56/107, https://nhsjs.com/wp-content/uploads/2024/09/Deep-Learning-in-Real-Estate-Prediction-An-Empirical-Study-on-California-House-Prices.pdf
+https://www.researchgate.net/profile/Emma-Clark-57/publication/391848872_A_Novel_Non-Linear_Framework_for_California_Housing_Prices_Domain-
+
