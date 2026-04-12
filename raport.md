@@ -847,7 +847,7 @@ W oparciu o przeprowadzone eksperymenty, wyłoniono optymalne konfiguracje dla k
 * **SVM:** `C = 100`, `kernel = rbf`, `gamma = scale`
 * **KNN:** `n_neighbors = 10`, `weights = distance`, `metric = manhattan`
 
-##Zestawienie wyników z innymi opracowaniami
+## Zestawienie wyników z innymi opracowaniami
 
 Osiągnięcie przez autorską sieć MLP współczynnika R2=0.78 (architektura [64, 32]) jest rezultatem znaczącym, biorąc pod uwagę rezygnację z gotowych frameworków wysokopoziomowych. Modele budowane w oparciu o bibliotekę Keras o zbliżonej głębokości osiągają zazwyczaj wyniki w przedziale 0.75−0.81. Przeprowadzone eksperymenty nad funkcjami aktywacji (wyższość ReLU nad funkcją sigmoidalną) oraz technikami inicjalizacji wag (He Initialization) stanowią praktyczne potwierdzenie teoretycznych rozważań dotyczących problemu zanikającego gradientu (vanishing gradient). Odnotowano również, że nieliniowa struktura sieci neuronowej pozwoliła na uzyskanie znacznie lepszych rezultatów niż klasyczna regresja wektorów nośnych (SVR), co podkreśla znaczenie warstw ukrytych w modelowaniu cen nieruchomości.
 
