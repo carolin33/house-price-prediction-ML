@@ -188,3 +188,32 @@ evaluate_parameter("subsample", [0.6, 0.8, 0.9, 1.0])
 results_df = pd.DataFrame(all_results)
 results_df.to_csv("wyniki_gradient_boosting_final.csv", index=False)
 print("\nZapisano wyniki do: wyniki_gradient_boosting_final.csv")
+
+# ============================================================
+# 9. FEATURE IMPORTANCE (DLA NAJLEPSZEJ KONFIGURACJI GB)
+# ============================================================
+
+final_gb_pipe = Pipeline([
+    ("preprocess", preprocessor_reg),
+    ("model", GradientBoostingRegressor(
+        n_estimators=300,
+        learning_rate=0.2,
+        max_depth=5,
+        random_state=42
+    ))
+])
+final_gb_pipe.fit(X_reg, y_reg)
+
+feature_names = final_gb_pipe.named_steps["preprocess"].get_feature_names_out()
+importances = final_gb_pipe.named_steps["model"].feature_importances_
+
+fi_df = pd.DataFrame({
+    "cecha": feature_names,
+    "importance": importances
+}).sort_values("importance", ascending=False)
+
+fi_df.to_csv("feature_importance_gb.csv", index=False)
+
+print("Zapisano wawnosc cech do: feature_importance_gb.csv")
+print("\nTop 10 najwazniejszych cech:")
+print(fi_df.head(10))
