@@ -1,0 +1,11 @@
+BASELINE = {
+    "test_ratio": 0.2,
+    "hidden_layers": [32],
+    "activation": "relu",
+    "weight_init_scale": 1.0,
+    "lr": 0.001,
+    "epochs": 100,
+    "repeats": 3,
+    "seed_base": 42,
+    "verbose": False,
+}

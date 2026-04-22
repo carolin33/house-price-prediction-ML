@@ -1,0 +1,10 @@
+parametr,wartosc
+test_ratio,0.2
+hidden_layers,"[64, 32, 16, 8]"
+activation,tanh
+weight_init_scale,1.0
+lr,0.005
+epochs,50
+repeats,5
+seed_base,42
+verbose,False
