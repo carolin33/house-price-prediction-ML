@@ -301,3 +301,222 @@ Na zbiorze testowym wynik był niższy i wyniósł **R² = 0.7378**. Oznacza to,
 MAE na zbiorze testowym wyniosło około **38 946 dolarów**, czyli przeciętna predykcja różniła się od rzeczywistej wartości o około 39 tysięcy dolarów. RMSE wyniosło około **58 834 dolarów**, co pokazuje, że występowały również większe błędy predykcji.
 
 Różnica między wynikiem treningowym i testowym wskazuje na przeuczenie modelu. KNN bardzo dobrze zapamiętał dane treningowe, ale gorzej radził sobie na nowych danych. Mimo tego wynik testowy nadal pokazuje, że model potrafił uchwycić część zależności w danych.
+
+## 3. Model SVM
+
+### 3.1. Opis SVM
+
+SVM (Support Vector Machine) to metoda uczenia maszynowego, która polega na znalezieniu funkcji najlepiej dopasowującej się do danych. W przypadku regresji (SVR) model stara się znaleźć funkcję, która mieści się w określonym marginesie błędu (`epsilon`), jednocześnie zachowując jak największą prostotę.
+
+SVM może wykorzystywać różne funkcje jądra (kernel), które pozwalają modelowi uchwycić zależności liniowe i nieliniowe.
+
+---
+
+## 3.2. Strojenie hiperparametrów modelu SVM
+
+Strojenie modelu wykonano poprzez analizę wpływu poszczególnych parametrów na jakość modelu.
+
+Najważniejszą metryką był współczynnik **R²**.
+
+---
+
+### 3.2.1. Strojenie parametru `C`
+
+Parametr `C` kontroluje stopień dopasowania modelu.
+
+| `C` | R² |
+|---:|---:|
+| 0.1 | -0.06 |
+| 1   | -0.05 |
+| 10  | -0.01 |
+| 100 | 0.28 |
+
+Najlepszy wynik uzyskano dla `C = 100`. Wraz ze wzrostem wartości parametru model lepiej dopasowywał się do danych.
+
+---
+
+### 3.2.2. Strojenie parametru `kernel`
+
+| `kernel` | R² |
+|---|---:|
+| linear | 0.62 |
+| rbf | 0.29 |
+| poly | 0.18 |
+| sigmoid | 0.45 |
+
+Najlepszy wynik uzyskano dla jądra **linear**. Oznacza to, że w tym przypadku zależności w danych były w dużej mierze liniowe.
+
+---
+
+### 3.2.3. Strojenie parametrów `gamma` i `epsilon`
+
+Zmiany parametrów `gamma` oraz `epsilon` nie miały istotnego wpływu na wynik modelu – wartości R² pozostawały praktycznie niezmienne.
+
+---
+
+### 3.2.4. Końcowa konfiguracja modelu
+
+| Parametr | Wartość |
+|---|---:|
+| `C` | 100 |
+| `kernel` | linear |
+| `gamma` | scale |
+| `epsilon` | 0.01 |
+
+---
+
+### 3.2.5. Ocena modelu na zbiorze testowym
+
+| Zbiór | R² | MAE | RMSE |
+|---|---:|---:|---:|
+| Train | 0.62 | 49031 | 71146 |
+| Test | 0.60 | 49198 | 72474 |
+
+Model osiągnął umiarkowaną jakość dopasowania. Wartość R² na poziomie około **0.60** oznacza, że model wyjaśnia około 60% zmienności danych.
+
+Błędy predykcji (MAE i RMSE) są stosunkowo wysokie, co wskazuje na ograniczoną dokładność modelu. Niewielka różnica między wynikami train i test sugeruje jednak, że model nie jest silnie przeuczony.
+
+---
+
+## 4. Model Gradient Boosting
+
+### 4.1. Opis Gradient Boosting
+
+Gradient Boosting to metoda oparta na wielu drzewach decyzyjnych budowanych sekwencyjnie. Każde kolejne drzewo poprawia błędy poprzednich, co pozwala modelowi uchwycić złożone zależności w danych.
+
+---
+
+## 4.2. Strojenie hiperparametrów modelu Gradient Boosting
+
+Strojenie wykonano metodą greedy.
+
+---
+
+### 4.2.1. Strojenie parametru `n_estimators`
+
+| `n_estimators` | R² | MAE | RMSE |
+|---:|---:|---:|---:|
+| 50  | 0.7249 | 43104 | 60566 |
+| 100 | 0.7744 | 38297 | 54845 |
+| 200 | 0.8020 | 35342 | 51379 |
+| 300 | 0.8117 | 34256 | 50108 |
+
+Najlepszy wynik uzyskano dla `n_estimators = 300`.
+
+---
+
+### 4.2.2. Strojenie parametru `learning_rate`
+
+| `learning_rate` | R² | MAE | RMSE |
+|---:|---:|---:|---:|
+| 0.01 | 0.6702 | 48240 | 66311 |
+| 0.05 | 0.7924 | 36353 | 52614 |
+| 0.1  | 0.8117 | 34256 | 50108 |
+| 0.2  | 0.8202 | 33164 | 48952 |
+
+Najlepszy wynik uzyskano dla `learning_rate = 0.2`.
+
+---
+
+### 4.2.3. Strojenie parametru `max_depth`
+
+| `max_depth` | R² | MAE | RMSE |
+|---:|---:|---:|---:|
+| 2 | 0.7974 | 35946 | 51969 |
+| 3 | 0.8202 | 33164 | 48952 |
+| 4 | 0.8277 | 32032 | 47929 |
+| 5 | 0.8285 | 31670 | 47816 |
+
+Najlepszy wynik uzyskano dla `max_depth = 5`.
+
+---
+
+### 4.2.4. Strojenie parametru `subsample`
+
+| `subsample` | R² | MAE | RMSE |
+|---:|---:|---:|---:|
+| 0.6 | 0.8209 | 32511 | 48867 |
+| 0.8 | 0.8269 | 31952 | 48033 |
+| 0.9 | 0.8280 | 31868 | 47879 |
+| 1.0 | 0.8285 | 31670 | 47816 |
+
+Najlepszy wynik uzyskano dla `subsample = 1.0`.
+
+---
+
+### 4.2.5. Końcowa konfiguracja modelu
+
+| Parametr | Wartość |
+|---|---:|
+| `n_estimators` | 300 |
+| `learning_rate` | 0.2 |
+| `max_depth` | 5 |
+| `subsample` | 1.0 |
+
+---
+
+### 4.2.6. Ocena modelu na zbiorze testowym
+
+| Zbiór | R² | MAE | RMSE |
+|---|---:|---:|---:|
+| Train | 0.9450 | 19494 | 27072 |
+| Test | 0.8356 | 30623 | 46587 |
+
+Model osiągnął bardzo wysoką jakość dopasowania. Na zbiorze testowym wyjaśnia około **84% zmienności cen nieruchomości**, co oznacza bardzo dobrą skuteczność.
+
+Widać różnicę między train a test, co może wskazywać na lekkie przeuczenie, jednak wynik testowy nadal pozostaje bardzo dobry.
+
+---
+
+## 5. Porównanie modeli
+
+W projekcie porównano cztery modeli:
+
+- Random Forest,
+- KNN,
+- Gradient Boosting,
+- SVM.
+
+Porównanie wykonano na podstawie wyników uzyskanych na zbiorze testowym.
+
+### 5.1. Porównanie wartości R²
+
+| Model | R² (Test) |
+|---|---:|
+| Gradient Boosting | 0.8356 |
+| Random Forest | 0.8225 |
+| KNN | 0.7378 |
+| SVM | 0.6022 |
+
+Najlepszy wynik uzyskał model **Gradient Boosting**, który wyjaśnia około **84% zmienności danych**. Bardzo zbliżony wynik osiągnął **Random Forest**.
+
+Model **KNN** osiągnął średnią jakość, natomiast **SVM** uzyskał najsłabszy wynik spośród analizowanych modeli.
+
+---
+
+### 5.2. Porównanie błędów predykcji
+
+| Model | MAE | RMSE |
+|---|---:|---:|
+| Gradient Boosting | 30623 | 46587 |
+| Random Forest | 31416 | 48415 |
+| KNN | 38946 | 58834 |
+| SVM | 49198 | 72474 |
+
+Najmniejsze błędy uzyskał model **Gradient Boosting**, co potwierdza jego wysoką skuteczność.
+
+Największe błędy wystąpiły w modelu **SVM**, co wskazuje na jego ograniczoną zdolność do dokładnego przewidywania cen nieruchomości.
+
+---
+
+### 5.3. Wnioski z porównania
+
+Na podstawie przeprowadzonej analizy można stwierdzić, że:
+
+- **Gradient Boosting** był najlepszym modelem – osiągnął najwyższe R² oraz najniższe błędy,
+- **Random Forest** uzyskał bardzo zbliżone wyniki i również dobrze radził sobie z danymi,
+- **KNN** dawał umiarkowane rezultaty, ale był podatny na przeuczenie,
+- **SVM** okazał się najsłabszy w tym zadaniu, prawdopodobnie ze względu na ograniczoną zdolność do modelowania złożonych zależności,
+- modele drzewiaste (Gradient Boosting, Random Forest) najlepiej radziły sobie z analizowanym problemem.
+
+Można więc uznać, że dla tego typu danych najbardziej odpowiednie są modele oparte na drzewach decyzyjnych, które potrafią uchwycić nieliniowe zależności między zmiennymi.
