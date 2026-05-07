@@ -270,8 +270,15 @@ class MLP:
             inp = layer_sizes[i]
             out = layer_sizes[i + 1]
 
-            # male losowe wagi - limit Xavier z mnoznikiem
-            limit = _sqrt(6.0 / (inp + out)) * weight_init_scale
+            # Dynamiczny dobor inicjalizacji wag na podstawie funkcji aktywacji:
+            #  - ReLU/Leaky ReLU zeruja ~polowe neuronow, wiec potrzebuja
+            #    wiekszych wag startowych -> He Uniform: sqrt(6 / inp)
+            #  - tanh/sigmoid sa symetryczne i aktywuja caly zakres
+            #    -> Xavier/Glorot Uniform: sqrt(6 / (inp + out))
+            if activation in ("relu", "leaky_relu"):
+                limit = _sqrt(6.0 / inp) * weight_init_scale          # He
+            else:
+                limit = _sqrt(6.0 / (inp + out)) * weight_init_scale   # Xavier
             W = [[_uniform(-limit, limit) for _ in range(inp)]
                  for _ in range(out)]
 
