@@ -14,21 +14,20 @@ W projekcie porównano kilka metod:
 
 Wszystkie te metody wykorzystano do rozwiązania problemu regresji, czyli przewidywania wartości zmiennej median_house_value. Zadanie polegało na estymacji mediany cen nieruchomości na podstawie dostępnych cech opisujących dany obszar. Nie jest to łatwy problem, bo ceny nieruchomości zależą od wielu różnych czynników, a zależności między nimi często są nieliniowe.
 
-Do oceny jakości modeli wykorzystano miary MAE,RMSE oraz R². Dzięki nim można było sprawdzić, jak duży jest błąd przewidywań i jak dobrze model dopasowuje się do danych. 
+Do oceny jakości modeli wykorzystano miary MAE,RMSE oraz R². Dzięki nim można było sprawdzić, jak duży jest błąd przewidywań i jak dobrze model dopasowuje się do danych.  
 
 ## 2. Przegląd literatury
-
-
 
 ## 3. Sztuczne Sieci Neuronowe
 
 ### 3.1 Czym są Sztuczne Sieci Neuronowe
 
-!!! Dodać
+Sztuczne Sieci Neuronowe (SSN) to zaawansowane modele matematyczne i algorytmiczne, inspirowane budową biologiczną ludzkiego mózgu. MLP składa się z warstwy wejściowej, ukrytej i wyjściowej. Proces uczenia sieci opiera się na dwóch głównych mechanizmach: propagacji wprzód i propagacji wstecz. W propagacji w przód dane przechodzą przez sieć, a każdy neuron sumuje iloczyn wejść i wag, po czym przepuszcza wynik przez nieliniową funkcje aktywacji. Funckje tę są w stanie modelować nieliniowe zależności między danymi. W propagacji wstecznej po wygenerowaniu wyniku, sieć oblicza błąd w stosunku do wartości rzeczywistej, a następnie wykorzystuje algorytmy optymalzacyjne takie jak spadek gradientu, sieć cofa się i koryguje wagi w taki sposób, aby w kolejnych epokach ten błąd był jak najmniejszy.
 
 ### 3.2 Analiza wpływu parametrów na skuteczność działania sieci
 
 Model bazowy:
+
 - Proporcja zbioru testowego = 0.2
 - Architektura warstw ukrytych = [32]
 - Funkcja aktywacji = relu
@@ -58,7 +57,7 @@ Najlepszym wynikiem okazała się proporcja 0.15, osiągając najniższy błąd 
 W drugim etapie badaliśmy wpływ głebokości sieci. Testowaliśmy od 0 do 4 wartw ukrytych o stałej liczbie neuronów 16.
 
 | Wartość parametru | Śr. RMSE (Trening) | Śr. RMSE (Test) | Śr. R² (Trening) | Śr. R² (Test) | Najlepsze R² (Test) |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | [] (0 warstw) | 69046.58 | 68877.29 | 0.6418 | 0.6434 | 0.6493 |
 | [16] | 55998.80 | 55825.74 | 0.7644 | 0.7657 | 0.7613 |
 | [16, 16] | 52655.37 | 53031.54 | 0.7917 | 0.7886 | 0.7900 |
@@ -125,10 +124,9 @@ W szóstym kroku zbadaliśmy współczynnik uczenia. Testowane wartości: 0.01, 
 
 ![Wykres Współczynnika Uczenia](wykres_lr.png)
 
-Testy wykazały klasyczną zależność, zbyt wysoki współczynnik 0.01 prowadził do przeuczenia, różnica między R^2 na zbiorze treningowym a testowym wyniosła około 5 punktów procentowych. Natomiast zbyt niski współczynnik 0.0001 powodował niedouczenie wynik R^2 wyniósł 0.7687. Najlepszą wartością okazało się 0.001 z najniższym RMSE = 50906.53. Okazało się lepsze minimalnie od naszej wartości początkowej 0.005. 
+Testy wykazały klasyczną zależność, zbyt wysoki współczynnik 0.01 prowadził do przeuczenia, różnica między R^2 na zbiorze treningowym a testowym wyniosła około 5 punktów procentowych. Natomiast zbyt niski współczynnik 0.0001 powodował niedouczenie wynik R^2 wyniósł 0.7687. Najlepszą wartością okazało się 0.001 z najniższym RMSE = 50906.53. Okazało się lepsze minimalnie od naszej wartości początkowej 0.005.
 
-
-### 3.2.7 Liczba epok 
+### 3.2.7 Liczba epok
 
 Przedostatnim badanym parametrem była liczba epok. Testowane liczby epok: 10,30,50,100,200
 
@@ -142,9 +140,7 @@ Przedostatnim badanym parametrem była liczba epok. Testowane liczby epok: 10,30
 
 ![Wykres Epok](wykres_epoki.png)
 
-Wzrast ze wzrostem liczby epok błąd na zbiorze testowym jak również na zbiorze treningowym malał. Najlepszy wynik na zbiorze testowym osiągneliśmy dla 200 epok R^2 = 0.8086. Ta wartość przekroczyła narzucony przez nas próg 0.03 różnicy w R^2 między zbiorem testowym, a treningowym. Widać, że w porównaniu do 100 epok, wzrost na zbiorze testowym jest 0.003, a na treningowym 0.02, są to pierwsze sygnały przeucznia. Dlatego 100 epok wygrało.
-
-!!! poprawić wyżej 
+Wraz ze wzrostem liczby epok błąd na zbiorze testowym jak również na zbiorze treningowym malał. Najlepszy wynik na zbiorze testowym osiągneliśmy dla 200 epok R^2 = 0.8086. Ta wartość przekroczyła narzucony przez nas próg 0.03 różnicy w R^2 między zbiorem testowym, a treningowym. Widać, że w porównaniu do 100 epok, wzrost na zbiorze testowym jest niewielki tylko o 0.003, a na treningowym o 0.02, są to pierwsze sygnały przeucznia. Odrzuciliśmy więc 200 epok, wybierając 100.
 
 ### 3.2.8 Liczba powtórzeń
 
@@ -161,24 +157,21 @@ Wynik dla zalednie 1 powtórzenia może się wydawać najlepszy RMSE = 49672.24,
 
 ### 3.3 Podsumowanie i Wnioski
 
-Ostateczna, optymalna konfigracja sieci: 
+Po przejściu przez wszystkie etapy optymalizacji, ostateczna konfiguracja sieci neuronowej:
+
 - Proporcja zbioru testowego: 0.15
 - Głębokość i topologia: 4 warstwy ukryte [32,32,32,32]
 - Funckja aktywacji: Tanh
 - Skala inicjalizacji wag: 1.0
 - Współczynnik uczenia: 0.001
 - Liczba epok: 100
-- Liczba powtórzeń: 3 
+- Liczba powtórzeń: 3
 
-Osiągneliśmy przy tym R^2 = 0.8052, RMSE = 50906.53
-
-!!! do dokończenia
-
-
+Architektura ta pozwoliła na osiągnięcie wyniku na zbiorze testowym na poziomie R^2 = 0.8052 oraz błedu RMSE = 50906.53. Oznacza to, że nasz model jest w stanie wyjaśnić ponad 80 % wariancji ceny domu, co jest wynikiem satysfakcjonującym, jednak wciąż jest miejsce na poprawę. Przy zastosowaniu nowocześniejszego podejścia, użycie bibliotek takich jak TensorFlow lub PyTorch mogłoby pozwolić na znaczną poprawę wyników. Naszym małym sukcesem było to, że odrzucenie wartości parametru, który cechował się różnicą w R^2 między zbiorem treningowym a testowym większą niż 0.03 było słuszne i pozwoliło uniknąć przeuczenia. 
 
 ## 4. Random Forest
 
-### 4.1 Czym jest Random Forest 
+### 4.1 Czym jest Random Forest
 
 Random Forest, czyli las losowy, to algorytm uczenia maszynowego oparty na wielu drzewach decyzyjnych. Zamiast polegać na jednym drzewie, tworzy cały „las” drzew, z których każde uczy się na trochę innym, losowo wybranym fragmencie danych i zwykle korzysta tylko z części dostępnych cech. Działanie polega na tym, że każde drzewo podejmuje własną decyzję, a następnie wyniki wszystkich drzew są łączone. W klasyfikacji wybierana jest najczęściej wskazywana klasa, a w regresji zwykle obliczana jest średnia z przewidywań drzew. Dzięki temu model jest stabilniejszy i mniej podatny na błędy pojedynczego drzewa. Najważniejsza idea Random Forest polega na połączeniu wielu prostszych modeli oraz wprowadzeniu losowości, co zmniejsza ryzyko przeuczenia i poprawia jakość przewidywań
 
