@@ -1,6 +1,6 @@
 # Projekt Elementy sztucznej inteligencji
 
-## Wstęp i opis badanych problemów
+## 1. Wstęp i opis badanych problemów
 
 W niniejszym projekcie porównano skuteczność wybranych metod uczenia maszynowego w zadaniu regresji. Do analizy wykorzystano zbiór danych California Housing, który jest często używany do testowania modeli predykcyjnych. Celem projektu było sprawdzenie, jak zmiany wybranych hiperparametrów wpływają na jakość działania modeli oraz ich zdolność do przewidywania wartości na nowych danych. Chodziło więc nie tylko o uzyskanie jak najlepszego wyniku, ale też o lepsze zrozumienie, jak zachowują się różnee metody przy zmianie ustawień.
 
@@ -16,11 +16,17 @@ Wszystkie te metody wykorzystano do rozwiązania problemu regresji, czyli przewi
 
 Do oceny jakości modeli wykorzystano miary MAE,RMSE oraz R². Dzięki nim można było sprawdzić, jak duży jest błąd przewidywań i jak dobrze model dopasowuje się do danych. 
 
-### 1.1. Czym są Sztuczne Sieci Neuronowe
+## 2. Przegląd literatury
+
+
+
+## 3. Sztuczne Sieci Neuronowe
+
+### 3.1 Czym są Sztuczne Sieci Neuronowe
 
 !!! Dodać
 
-### 1.2 Analiza wpływu parametrów na skuteczność działania sieci
+### 3.2 Analiza wpływu parametrów na skuteczność działania sieci
 
 Model bazowy:
 - Proporcja zbioru testowego = 0.2
@@ -33,7 +39,7 @@ Model bazowy:
 
 Badanie przeprowadzono, testując kolejno jeden parametr w każdym kroku, na ten który wykazał się najmniejszym RMSE. Po znalezieniu najlepszego wyniku, skrypt nadpisywał model bazowy optymalną wartością. Każdy eksperyment powtarzano trzykrotnie, co było absolutnym minimum, w celu uśrednienia wyników i wyeliminowania wpływu losowej inicjalizacji wag oraz podziału danych. Taki sposób oparty jedynie na minimalzacji błędu, miał jeden zasadniczy problem. Skrypt, działający automatycznie, mógł wybrać model przeuczony, co dostrzegliśmy na początku analizy. Z tego powodu wprowadzliśmy do kodu dodatkowy bezpiecznik. Zanim skrypt wybrał parametr z najniższym RMSE, sprawdzał różnicę między wynikiem R^2 na zbiorze treningowym a testowym. Ustaliliśmy próg na poziomie 3%. Jeśli różnica przekrzaczała tę wartość, model automatycznie był odrzucany.
 
-#### 1.2.1 Wielkość próby testowej (test_ratio)
+#### 3.2.1 Wielkość próby testowej (test_ratio)
 
 W pierwszym kroku zbadaliśmy wpływ proporcji podziału danych na zbiór uczący i testowy. Testowano wartości: 0.1, 0.15, 0.2, 0.3, 0.4.
 
@@ -47,7 +53,7 @@ W pierwszym kroku zbadaliśmy wpływ proporcji podziału danych na zbiór ucząc
 
 Najlepszym wynikiem okazała się proporcja 0.15, osiągając najniższy błąd na zbiorze testowym RMSE = 54361.03. Choć w uczeniu maszynowym najczęściej stosuje się podział 80/20, który u nas zdobył niewiele gorszy wynik RMSE = 55568.48, to w tym eksperymencie zmniejszenie zbioru testowego, prawdopodobnie pozwoliło na zasilenie sieci dodatkową pulą danych treningowych. Powiększenie zbioru testowego do wartości 0.3, 0.4 powodowało spadek jakości modelu. Ze względu na te wyniki, to właśnie wartość 0.15 została wybrana do dalszych eksperymentów.
 
-#### 1.2.2 Głębokość sieci liczba wartw ukrytych
+#### 3.2.2 Głębokość sieci liczba wartw ukrytych
 
 W drugim etapie badaliśmy wpływ głebokości sieci. Testowaliśmy od 0 do 4 wartw ukrytych o stałej liczbie neuronów 16.
 
@@ -62,7 +68,7 @@ W drugim etapie badaliśmy wpływ głebokości sieci. Testowaliśmy od 0 do 4 wa
 Przy braku wartsw ukrytych widać, że model osiąga najsłabszy wynik i wyjaśnia jedynie 64% zmienności ceny.
 Wprowadzenie już pierwszej warstwy ukrytej [16] znacząco poprawia wyniki, skok 12 punktów procentowych R^2. Kolejne warstwy poprawiają wyniki, ale nie tak drastycznie jak pierwszy przeskok. Zwycięzcą okazał się model z 4 warstwami ukrytymi, który osiągnął najlepszy wynik 52168.90 RMSE, dlatego też ta architektura 4-warstwowa została wybrana do dalszej optymalizacji.
 
-#### 1.2.3 Topologia sieci 
+#### 3.2.3 Topologia sieci 
 
 W trzecim etapie badania testowaliśmy rozkład neuronów w naszej 4-warstwowej sieci. Testowaliśmy głównie strukturę, w której liczba neuronów maleje w głąb sieci, ale również taką gdzie liczba neuronów była stała.
 
@@ -76,7 +82,7 @@ W trzecim etapie badania testowaliśmy rozkład neuronów w naszej 4-warstwowej 
 
 Wąska topologia sieci [8, 4, 4, 2] okazała się zdecydowanie zbyt wąska, nie była w stanie przetworzyć naszych danych, osiągając wynik 50% R^2. Minimalne zwiększeni do [16, 8, 4, 2] podniosło wynik o 28 punktów procentowych R^2. Architektura [32, 32, 32, 32] osiągnęła najlepszy wynik R^2 = 0.7992, przekraczając w pojedynczej próbie barierę 0.8. Pozostałe warianty, jak [32,16,8,4] i [64,32,16,8] uzyskały zbliżone, ale ostatecznie słabsze wyniki pod względem RMSE. Ostatenie algorytm wybrał układ o stałej szerokości [32,32,32,32], ponieważ miał on najlepszą celność RMSE = 51682.46.
 
-#### 1.2.4 Funkcja aktywacji
+#### 3.2.4 Funkcja aktywacji
 
 W czwartym kroku sprawdziliśmy, funkcję aktywacji. Testowaliśmy funkcje: ReLU, Leaky ReLU,, Tanh i Sigmoid.
 
@@ -89,7 +95,7 @@ W czwartym kroku sprawdziliśmy, funkcję aktywacji. Testowaliśmy funkcje: ReLU
 
 Najsłabszy wynik uzyskała funkcja Sigmoid śrendi test R^2 = 0.7438. Najciekawszym wynikiem tego etapu była rywalizacja między ReLU a Tanh. Funkcja ReLU jest standardem w głębokim uczeniu, jednak w naszym eksperymencie funkcja Tanh osiągneła nieznacznie lepszy wynik  R^2 = 0.8052. Różnica RMSE wyniosła między funkcjami 775,93 na przewagę Tanh. Z tego względu to funkcja Tanh została wybrana do dalszej optymalizacji.
 
-#### 1.2.5 Skala inicjalizacji wag
+#### 3.2.5 Skala inicjalizacji wag
 
 W tym etapie sprawdziliśmy, jak zmiana skali (mnożnika) początkowych wag wpływa na naukę sieci. Testowane wartości: 0.01, 0.1, 1.0, 2.0, 5.0
 
@@ -103,7 +109,7 @@ W tym etapie sprawdziliśmy, jak zmiana skali (mnożnika) początkowych wag wpł
 
 Najgorszy wyniki uzyskaliśym dla skali 0.01. Przy tak małych wagach sieć praktycznie się nie uczy, co widać po ujemnym R^2, oznaczającym błąd większy niż przy zwykłym zgadywaniu średniej ceny. Z kolei przy skali 5.0 wagi były zbyt duże, co widać na bardzo wysokim błędzie na zbiorze testowym. Najlepszym wartością okazała się skala 1.0, czyli standardowa. Uzyskała ona RMSE = 50906.53. Warto zauważyć, że skala 2.0 dała lepszy wynik na treningu 0.8342, jednak gorszy na testowym i różnica była spora bo aż 4 punkty procentowe R^2, może to świadczyć o tym że model zaczął się przeuczać. Dlatego do końcowego modelu wybraliśmy skalę 1.0.
 
-#### 1.2.6 Współczynnik uczenia
+#### 3.2.6 Współczynnik uczenia
 
 W szóstym kroku zbadaliśmy współczynnik uczenia. Testowane wartości: 0.01, 0.005, 0.001, 0.0005, 0.0001
 
@@ -118,7 +124,7 @@ W szóstym kroku zbadaliśmy współczynnik uczenia. Testowane wartości: 0.01, 
 Testy wykazały klasyczną zależność, zbyt wysoki współczynnik 0.01 prowadził do przeuczenia, różnica między R^2 na zbiorze treningowym a testowym wyniosła około 5 punktów procentowych. Natomiast zbyt niski współczynnik 0.0001 powodował niedouczenie wynik R^2 wyniósł 0.7687. Najlepszą wartością okazało się 0.001 z najniższym RMSE = 50906.53. Okazało się lepsze minimalnie od naszej wartości początkowej 0.005. 
 
 
-#### 1.2.7 Liczba epok 
+#### 3.2.7 Liczba epok 
 
 Przedostatnim badanym parametrem była liczba epok. Testowane liczby epok: 10,30,50,100,200
 
@@ -134,7 +140,7 @@ Wzrast ze wzrostem liczby epok błąd na zbiorze testowym jak również na zbior
 
 !!! poprawić wyżej 
 
-#### 1.2.8 Liczba powtórzeń
+#### 3.2.8 Liczba powtórzeń
 
 W otatnim etapie przeanalizowaliśmy wpływ uśredniania wyników na ocene jakości modelu. Testowana liczba powtórzeń: 1,3,5,10.
 
@@ -147,7 +153,7 @@ W otatnim etapie przeanalizowaliśmy wpływ uśredniania wyników na ocene jako�
 
 Wynik dla zalednie 1 powtórzenia może się wydawać najlepszy RMSE = 49672.24, ale w praktyce jest to szcześliwy wylosowanie inicjalizacji wag lub/i podziału danych. Zwiększenie liczby powtórzeń do 3, 5 i 10 urealnia wyniki, niwelując wpływ przypadkowości. Różnice między wariantami są już znaczenie miejsze. Początkowe założenie o wykonaniu minumum 3 powtórzeń w każdym kroku było słuszne, jest to liczba, która pozwoliła zachować balans pomiędzy istotnością statycznyną, a czasem wykonywania skryptu.
 
-### 1.3 Podsumowanie i Wnioski
+#### 3.3 Podsumowanie i Wnioski
 
 Ostateczna, optymalna konfigracja sieci: 
 - Proporcja zbioru testowego: 0.15
@@ -164,13 +170,13 @@ Osiągneliśmy przy tym R^2 = 0.8052, RMSE = 50906.53
 
 
 
+## 4. Random Forest
 
-
-### 1.1. Czym jest Random Forest 
+### 4.1 Czym jest Random Forest 
 
 Random Forest, czyli las losowy, to algorytm uczenia maszynowego oparty na wielu drzewach decyzyjnych. Zamiast polegać na jednym drzewie, tworzy cały „las” drzew, z których każde uczy się na trochę innym, losowo wybranym fragmencie danych i zwykle korzysta tylko z części dostępnych cech. Działanie polega na tym, że każde drzewo podejmuje własną decyzję, a następnie wyniki wszystkich drzew są łączone. W klasyfikacji wybierana jest najczęściej wskazywana klasa, a w regresji zwykle obliczana jest średnia z przewidywań drzew. Dzięki temu model jest stabilniejszy i mniej podatny na błędy pojedynczego drzewa. Najważniejsza idea Random Forest polega na połączeniu wielu prostszych modeli oraz wprowadzeniu losowości, co zmniejsza ryzyko przeuczenia i poprawia jakość przewidywań
 
-## 1.2. Strojenie hiperparametrów modelu Random Forest
+### 4.2. Strojenie hiperparametrów modelu Random Forest
 
 Strojenie modelu Random Forest wykonano metodą greedy. Oznacza to, że hiperparametry były dobierane kolejno, jeden po drugim. W każdym kroku zmieniano tylko jeden parametr, a pozostałe miały aktualnie najlepsze znalezione wartości. Dzięki temu można było sprawdzić, jak konkretna zmiana wpływa na jakość modelu.
 
@@ -186,7 +192,7 @@ Najważniejszą metryką przy wyborze najlepszych parametrów było **R²**. Im 
 
 ---
 
-### 1.2.1. Strojenie parametru `n_estimators`
+### 4.2.1. Strojenie parametru `n_estimators`
 
 Na początku sprawdzono wpływ liczby drzew w lesie. Parametr `n_estimators` określa, ile drzew decyzyjnych zostanie utworzonych w modelu Random Forest. Zwykle większa liczba drzew poprawia stabilność modelu, ale jednocześnie zwiększa czas uczenia.
 
@@ -204,7 +210,7 @@ Najlepszy wynik uzyskano dla `n_estimators = 500`, gdzie R² wyniosło **0.8178*
 
 ---
 
-### 1.2.2. Strojenie parametru `max_depth`
+### 4.2.2. Strojenie parametru `max_depth`
 
 Następnie sprawdzono parametr `max_depth`, czyli maksymalną głębokość drzew. Parametr ten decyduje o tym, jak bardzo szczegółowe mogą być pojedyncze drzewa w lesie. Zbyt mała głębokość może powodować niedouczenie modelu, natomiast zbyt duża może prowadzić do przeuczenia.
 
@@ -222,7 +228,7 @@ Najlepszy wynik uzyskano dla `max_depth = None`, czyli bez ograniczenia głębok
 
 ---
 
-### 1.2.3. Strojenie parametru `min_samples_split`
+### 4.2.3. Strojenie parametru `min_samples_split`
 
 Kolejnym analizowanym parametrem był `min_samples_split`. Określa on minimalną liczbę próbek wymaganą do podziału węzła w drzewie. Im większa wartość tego parametru, tym prostsze stają się drzewa, ponieważ trudniej jest tworzyć kolejne podziały.
 
@@ -240,7 +246,7 @@ Największy spadek jakości widać dla `min_samples_split = 50`, gdzie R² spad�
 
 ---
 
-### 1.2.4. Strojenie parametru `max_features`
+### 4.2.4. Strojenie parametru `max_features`
 
 Ostatnim testowanym parametrem był `max_features`. Określa on, jaka część cech jest brana pod uwagę przy szukaniu najlepszego podziału w drzewie. W Random Forest często korzystne jest używanie tylko części cech, ponieważ zwiększa to różnorodność drzew i może poprawić jakość całego modelu.
 
@@ -258,7 +264,7 @@ dla  `max_features = 0.7` wynik był bardzo podobny, a MAE było nawet minimalni
 
 ---
 
-### 1.2.5. Wizualizacja procesu strojenia
+### 4.2.5. Wizualizacja procesu strojenia
 
 Poniższy wykres przedstawia zmianę wartości R² dla kolejnych sprawdzanych parametrów. Czerwonym punktem oznaczono najlepszą wartość w danym kroku optymalizacji.
 
@@ -274,7 +280,7 @@ Najlepszy wynik dla `max_features` uzyskano przy wartości `0.5`. Pokazuje to, �
 
 ---
 
-### 1.2.6. Końcowa konfiguracja modelu
+### 4.2.6. Końcowa konfiguracja modelu
 
 Po zakończeniu strojenia jako najlepszy zestaw hiperparametrów wybrano:
 
@@ -299,7 +305,7 @@ Poprawa nie była bardzo duża, ale była zauważalna. Największe znaczenie mia
 
 ---
 
-### 1.2.7. Ocena finalnego modelu na zbiorze testowym
+### 4.2.7. Ocena finalnego modelu na zbiorze testowym
 
 Po wybraniu najlepszych parametrów model został ponownie wytrenowany na całym zbiorze treningowym. Następnie oceniono go na zbiorze testowym, który nie był używany podczas strojenia.
 
@@ -320,15 +326,15 @@ RMSE było wyższe od MAE i wyniosło około **48 415 dolarów**, co oznacza, ż
 
 
 
-## 2. Model K-Nearest Neighbors (KNN)
+## 5. Model K-Nearest Neighbors (KNN)
 
-### 2.1. Opis KNN
+### 5.1. Opis KNN
 
 KNN, czyli metoda k najbliższych sąsiadów, to algorytm uczenia maszynowego, który klasyfikuje nowy obiekt na podstawie podobieństwa do wcześniej zapisanych danych.
 Działa tak, że szuka k najbliższych obiektów i sprawdza, do jakich klas należą. Następnie wybiera tę klasę, która pojawia się najczęściej wśród sąsiadów.
 Najważniejsza idea KNN jest taka, że podobne obiekty znajdują się blisko siebie. Algorytm jest łatwy do zrozumienia, ale przy dużej liczbie danych może działać wolniej.
 
-## 1.3. Strojenie hiperparametrów modelu KNN
+### 5.2. Strojenie hiperparametrów modelu KNN
 
 Strojenie modelu KNN wykonano metodą greedy, podobnie jak w przypadku modelu Random Forest. Oznacza to, że parametry były dobierane kolejno. W każdym kroku zmieniano jeden parametr, a pozostałe miały aktualnie najlepsze znalezione wartości.
 
@@ -336,7 +342,7 @@ Najważniejszą metryką przy wyborze parametrów było **R²**.
 
 ---
 
-### 1.3.1. Strojenie parametru `n_neighbors`
+### 5.2.1. Strojenie parametru `n_neighbors`
 
 Na początku sprawdzono parametr `n_neighbors`, czyli liczbę najbliższych sąsiadów branych pod uwagę podczas predykcji. Jest to jeden z najważniejszych parametrów w metodzie KNN.
 
@@ -358,7 +364,7 @@ Najlepszy wynik uzyskano dla `n_neighbors = 10`, gdzie R² wyniosło **0.7256**.
 
 ---
 
-### 1.3.2. Strojenie parametru `weights`
+### 5.2.2. Strojenie parametru `weights`
 
 Następnie sprawdzono parametr `weights`, który określa sposób ważenia sąsiadów.
 
@@ -375,7 +381,7 @@ Lepszy wynik uzyskano dla `weights = distance`. Oznacza to, że model działał 
 
 ---
 
-### 1.3.3. Strojenie parametru `metric`
+### 5.2.3. Strojenie parametru `metric`
 
 Ostatnim sprawdzanym parametrem była metryka odległości, czyli sposób obliczania podobieństwa między obserwacjami.
 
@@ -394,7 +400,7 @@ Najgorzej wypadła metryka `chebyshev`, dla której R² spadło do **0.7145**. O
 
 ---
 
-### 1.3.4. Wizualizacja procesu strojenia
+### 5.2.4. Wizualizacja procesu strojenia
 
 Poniższy wykres przedstawia zmianę wartości R² dla kolejnych sprawdzanych parametrów modelu KNN. Czerwonym punktem oznaczono najlepszą wartość dla danego parametru.
 
@@ -408,7 +414,7 @@ Dla metryki odległości najlepsza okazała się `manhattan`. Oznacza to, że sp
 
 ---
 
-### 1.3.5. Końcowa konfiguracja modelu
+### 5.2.5. Końcowa konfiguracja modelu
 
 Po zakończeniu strojenia jako najlepszy zestaw hiperparametrów wybrano:
 
@@ -431,7 +437,7 @@ Można zauważyć, że strojenie hiperparametrów poprawiło jakość modelu KNN
 
 ---
 
-### 1.3.6. Ocena finalnego modelu na zbiorze testowym
+### 5.2.6. Ocena finalnego modelu na zbiorze testowym
 
 Po wybraniu najlepszych parametrów model został wytrenowany na całym zbiorze treningowym, a następnie oceniony na zbiorze testowym.
 
@@ -450,9 +456,9 @@ MAE na zbiorze testowym wyniosło około **38 946 dolarów**, czyli przeciętna 
 
 Różnica między wynikiem treningowym i testowym wskazuje na przeuczenie modelu. KNN bardzo dobrze zapamiętał dane treningowe, ale gorzej radził sobie na nowych danych. Mimo tego wynik testowy nadal pokazuje, że model potrafił uchwycić część zależności w danych.
 
-## 3. Model SVM
+## 6. Model SVM
 
-### 3.1. Opis SVM
+### 6.1. Opis SVM
 
 SVM (Support Vector Machine) to metoda uczenia maszynowego, która polega na znalezieniu funkcji najlepiej dopasowującej się do danych. W przypadku regresji (SVR) model stara się znaleźć funkcję, która mieści się w określonym marginesie błędu (`epsilon`), jednocześnie zachowując jak największą prostotę.
 
@@ -460,7 +466,7 @@ SVM może wykorzystywać różne funkcje jądra (kernel), które pozwalają mode
 
 ---
 
-## 3.2. Strojenie hiperparametrów modelu SVM
+### 6.2. Strojenie hiperparametrów modelu SVM
 
 Strojenie modelu wykonano poprzez analizę wpływu poszczególnych parametrów na jakość modelu.
 
@@ -468,7 +474,7 @@ Najważniejszą metryką był współczynnik **R²**.
 
 ---
 
-### 3.2.1. Strojenie parametru `C`
+### 6.2.1. Strojenie parametru `C`
 
 Parametr `C` kontroluje stopień dopasowania modelu.
 
@@ -483,7 +489,7 @@ Najlepszy wynik uzyskano dla `C = 100`. Wraz ze wzrostem wartości parametru mod
 
 ---
 
-### 3.2.2. Strojenie parametru `kernel`
+### 6.2.2. Strojenie parametru `kernel`
 
 | `kernel` | R² |
 |---|---:|
@@ -496,13 +502,13 @@ Najlepszy wynik uzyskano dla jądra **linear**. Oznacza to, że w tym przypadku 
 
 ---
 
-### 3.2.3. Strojenie parametrów `gamma` i `epsilon`
+### 6.2.3. Strojenie parametrów `gamma` i `epsilon`
 
 Zmiany parametrów `gamma` oraz `epsilon` nie miały istotnego wpływu na wynik modelu – wartości R² pozostawały praktycznie niezmienne.
 
 ---
 
-### 3.2.4. Końcowa konfiguracja modelu
+### 6.2.4. Końcowa konfiguracja modelu
 
 | Parametr | Wartość |
 |---|---:|
@@ -513,7 +519,7 @@ Zmiany parametrów `gamma` oraz `epsilon` nie miały istotnego wpływu na wynik 
 
 ---
 
-### 3.2.5. Ocena modelu na zbiorze testowym
+### 6.2.5. Ocena modelu na zbiorze testowym
 
 | Zbiór | R² | MAE | RMSE |
 |---|---:|---:|---:|
@@ -526,21 +532,21 @@ Błędy predykcji (MAE i RMSE) są stosunkowo wysokie, co wskazuje na ograniczon
 
 ---
 
-## 4. Model Gradient Boosting
+## 7. Model Gradient Boosting
 
-### 4.1. Opis Gradient Boosting
+### 7.1. Opis Gradient Boosting
 
 Gradient Boosting to metoda oparta na wielu drzewach decyzyjnych budowanych sekwencyjnie. Każde kolejne drzewo poprawia błędy poprzednich, co pozwala modelowi uchwycić złożone zależności w danych.
 
 ---
 
-## 4.2. Strojenie hiperparametrów modelu Gradient Boosting
+### 7.2. Strojenie hiperparametrów modelu Gradient Boosting
 
 Strojenie wykonano metodą greedy.
 
 ---
 
-### 4.2.1. Strojenie parametru `n_estimators`
+### 7.2.1. Strojenie parametru `n_estimators`
 
 | `n_estimators` | R² | MAE | RMSE |
 |---:|---:|---:|---:|
@@ -553,7 +559,7 @@ Najlepszy wynik uzyskano dla `n_estimators = 300`.
 
 ---
 
-### 4.2.2. Strojenie parametru `learning_rate`
+### 7.2.2. Strojenie parametru `learning_rate`
 
 | `learning_rate` | R² | MAE | RMSE |
 |---:|---:|---:|---:|
@@ -566,7 +572,7 @@ Najlepszy wynik uzyskano dla `learning_rate = 0.2`.
 
 ---
 
-### 4.2.3. Strojenie parametru `max_depth`
+### 7.2.3. Strojenie parametru `max_depth`
 
 | `max_depth` | R² | MAE | RMSE |
 |---:|---:|---:|---:|
@@ -579,7 +585,7 @@ Najlepszy wynik uzyskano dla `max_depth = 5`.
 
 ---
 
-### 4.2.4. Strojenie parametru `subsample`
+### 7.2.4. Strojenie parametru `subsample`
 
 | `subsample` | R² | MAE | RMSE |
 |---:|---:|---:|---:|
@@ -592,7 +598,7 @@ Najlepszy wynik uzyskano dla `subsample = 1.0`.
 
 ---
 
-### 4.2.5. Końcowa konfiguracja modelu
+### 7.2.5. Końcowa konfiguracja modelu
 
 | Parametr | Wartość |
 |---|---:|
@@ -603,7 +609,7 @@ Najlepszy wynik uzyskano dla `subsample = 1.0`.
 
 ---
 
-### 4.2.6. Ocena modelu na zbiorze testowym
+### 7.2.6. Ocena modelu na zbiorze testowym
 
 | Zbiór | R² | MAE | RMSE |
 |---|---:|---:|---:|
@@ -616,7 +622,7 @@ Widać różnicę między train a test, co może wskazywać na lekkie przeuczeni
 
 ---
 
-## 5. Porównanie modeli
+## 8. Porównanie modeli
 
 W projekcie porównano cztery modeli:
 
@@ -627,7 +633,7 @@ W projekcie porównano cztery modeli:
 
 Porównanie wykonano na podstawie wyników uzyskanych na zbiorze testowym.
 
-### 5.1. Porównanie wartości R²
+### 8.1. Porównanie wartości R²
 
 | Model | R² (Test) |
 |---|---:|
@@ -642,7 +648,7 @@ Model **KNN** osiągnął średnią jakość, natomiast **SVM** uzyskał najsła
 
 ---
 
-### 5.2. Porównanie błędów predykcji
+### 8.2. Porównanie błędów predykcji
 
 | Model | MAE | RMSE |
 |---|---:|---:|
@@ -657,7 +663,7 @@ Największe błędy wystąpiły w modelu **SVM**, co wskazuje na jego ograniczon
 
 ---
 
-### 5.3. Wnioski z porównania
+### 8.3. Wnioski z porównania
 
 Na podstawie przeprowadzonej analizy można stwierdzić, że:
 
