@@ -18,6 +18,10 @@ Do oceny jakości modeli wykorzystano miary MAE,RMSE oraz R². Dzięki nim możn
 
 ## 2. Przegląd literatury
 
+Analiza rozwiazań udostępniach na platformach takich jak kaggle czy github pokazuje, że w problemach estymacji cen nieruchomości w Kalifornii dominują algorytmy takie jak drzewa decyzyjne, Random Forest oraz XGBoost. Osiągają R^2 na poziomie 0.8-0.84. Rozwiązania oparte o sztuczne sieci neuronowe, są również popularne, ale badacze podkreślają, że aby pokonać regresję liniową wymagają one głębszych architektur oraz rygorystycznego skalowania danych.  
+
+Niezależnie od wybranej architektury, twórcy modeli są zgodni co do hierarchii zmiennych. Median_income jest kluczową cechą, która ma znacznie większą moc przewidywania niż parametry fizyczne budynków. Ciekawym wątkiem jest fakt, że zbiór danych California Housing ma ustaloną górną granicę ceny na 500 000$. Wielu badaczy z tego powodu decyduje się na usunięcie tych rekordów.
+
 ## 3. Sztuczne Sieci Neuronowe
 
 ### 3.1 Czym są Sztuczne Sieci Neuronowe
