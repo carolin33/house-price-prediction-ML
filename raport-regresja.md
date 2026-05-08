@@ -18,7 +18,7 @@ Do oceny jakości modeli wykorzystano miary MAE,RMSE oraz R². Dzięki nim możn
 
 ## 2. Przegląd literatury
 
-Analiza rozwiązań udostępnionych na platformach takich jak kaggle czy github pokazuje, że w problemach estymacji cen nieruchomości w Kalifornii dominują algorytmy takie jak drzewa decyzyjne, Random Forest oraz XGBoost. Osiągają R^2 na poziomie 0.8-0.84. Rozwiązania oparte o sztuczne sieci neuronowe są również popularne, ale badacze podkreślają, że aby pokonać regresję liniową, wymagają one głębszych architektur oraz rygorystycznego skalowania danych.  
+Analiza rozwiązań udostępnionych na platformach takich jak kaggle czy github pokazuje, że w problemach estymacji cen nieruchomości w Kalifornii dominują algorytmy takie jak drzewa decyzyjne, Random Forest oraz XGBoost. Osiągają R² na poziomie 0.8-0.84. Rozwiązania oparte o sztuczne sieci neuronowe są również popularne, ale badacze podkreślają, że aby pokonać regresję liniową, wymagają one głębszych architektur oraz rygorystycznego skalowania danych.  
 
 Niezależnie od wybranej architektury, twórcy modeli są zgodni co do hierarchii zmiennych. Median_income jest kluczową cechą, która ma znacznie większą moc przewidywania niż parametry fizyczne budynków. Ciekawym wątkiem jest fakt, że zbiór danych California Housing ma ustaloną górną granicę ceny na 500 000$. Wielu badaczy z tego powodu decyduje się na usunięcie tych rekordów.
 
@@ -40,7 +40,7 @@ Model bazowy:
 - Liczba epok = 100
 - Liczba powtórzeń = 3
 
-Badanie przeprowadzono, testując kolejno jeden parametr w każdym kroku, na ten który wykazał się najmniejszym RMSE. Po znalezieniu najlepszego wyniku, skrypt nadpisywał model bazowy optymalną wartością. Każdy eksperyment powtarzano trzykrotnie, co było absolutnym minimum, w celu uśrednienia wyników i wyeliminowania wpływu losowej inicjalizacji wag oraz podziału danych. Taki sposób oparty jedynie na minimalizacji błędu, miał jeden zasadniczy problem. Skrypt, działający automatycznie, mógł wybrać model przeuczony, co dostrzegliśmy na początku analizy. Z tego powodu wprowadziliśmy do kodu dodatkowy bezpiecznik. Zanim skrypt wybrał parametr z najniższym RMSE, sprawdzał różnicę między wynikiem R^2 na zbiorze treningowym a testowym. Ustaliliśmy próg na poziomie 3%. Jeśli różnica przekraczała tę wartość, model automatycznie był odrzucany.
+Badanie przeprowadzono, testując kolejno jeden parametr w każdym kroku, na ten który wykazał się najmniejszym RMSE. Po znalezieniu najlepszego wyniku, skrypt nadpisywał model bazowy optymalną wartością. Każdy eksperyment powtarzano trzykrotnie, co było absolutnym minimum, w celu uśrednienia wyników i wyeliminowania wpływu losowej inicjalizacji wag oraz podziału danych. Taki sposób oparty jedynie na minimalizacji błędu, miał jeden zasadniczy problem. Skrypt, działający automatycznie, mógł wybrać model przeuczony, co dostrzegliśmy na początku analizy. Z tego powodu wprowadziliśmy do kodu dodatkowy bezpiecznik. Zanim skrypt wybrał parametr z najniższym RMSE, sprawdzał różnicę między wynikiem R² na zbiorze treningowym a testowym. Ustaliliśmy próg na poziomie 3%. Jeśli różnica przekraczała tę wartość, model automatycznie był odrzucany.
 
 ### 3.2.1 Wielkość próby testowej (test_ratio)
 
@@ -71,7 +71,7 @@ W drugim etapie badaliśmy wpływ głebokości sieci. Testowaliśmy od 0 do 4 wa
 ![Wykres głębokości](wykres_depth.png)
 
 Przy braku warstw ukrytych widać, że model osiąga najsłabszy wynik i wyjaśnia jedynie 64% zmienności ceny.
-Wprowadzenie już pierwszej warstwy ukrytej [16] znacząco poprawia wyniki, skok 12 punktów procentowych R^2. Kolejne warstwy poprawiają wyniki, ale nie tak drastycznie jak pierwszy przeskok. Zwycięzcą okazał się model z 4 warstwami ukrytymi, który osiągnął najlepszy wynik 52168.90 RMSE, dlatego też ta architektura 4-warstwowa została wybrana do dalszej optymalizacji.
+Wprowadzenie już pierwszej warstwy ukrytej [16] znacząco poprawia wyniki, skok 12 punktów procentowych R². Kolejne warstwy poprawiają wyniki, ale nie tak drastycznie jak pierwszy przeskok. Zwycięzcą okazał się model z 4 warstwami ukrytymi, który osiągnął najlepszy wynik 52168.90 RMSE, dlatego też ta architektura 4-warstwowa została wybrana do dalszej optymalizacji.
 
 ### 3.2.3 Topologia sieci 
 
@@ -85,7 +85,7 @@ W trzecim etapie badania testowaliśmy rozkład neuronów w naszej 4-warstwowej 
 | [64, 32, 16, 8] | 47788.03 | 51787.94 | 0.8284 | 0.7984 | 0.7978 |
 | [32, 32, 32, 32] | 48375.93 | 51682.46 | 0.8242 | 0.7992 | 0.8002 |
 
-Wąska topologia sieci [8, 4, 4, 2] okazała się zdecydowanie zbyt wąska, nie była w stanie przetworzyć naszych danych, osiągając wynik 50% R^2. Minimalne zwiększenie do [16, 8, 4, 2] podniosło wynik o 28 punktów procentowych R^2. Architektura [32, 32, 32, 32] osiągnęła najlepszy wynik R^2 = 0.7992, przekraczając w pojedynczej próbie barierę 0.8. Pozostałe warianty, jak [32,16,8,4] i [64,32,16,8] uzyskały zbliżone, ale ostatecznie słabsze wyniki pod względem RMSE. Ostatecznie algorytm wybrał układ o stałej szerokości [32,32,32,32], ponieważ miał on najlepszą celność RMSE = 51682.46.
+Wąska topologia sieci [8, 4, 4, 2] okazała się zdecydowanie zbyt wąska, nie była w stanie przetworzyć naszych danych, osiągając wynik 50% R². Minimalne zwiększenie do [16, 8, 4, 2] podniosło wynik o 28 punktów procentowych R². Architektura [32, 32, 32, 32] osiągnęła najlepszy wynik R² = 0.7992, przekraczając w pojedynczej próbie barierę 0.8. Pozostałe warianty, jak [32,16,8,4] i [64,32,16,8] uzyskały zbliżone, ale ostatecznie słabsze wyniki pod względem RMSE. Ostatecznie algorytm wybrał układ o stałej szerokości [32,32,32,32], ponieważ miał on najlepszą celność RMSE = 51682.46.
 
 ### 3.2.4 Funkcja aktywacji
 
@@ -98,7 +98,7 @@ W czwartym kroku sprawdziliśmy, funkcję aktywacji. Testowaliśmy funkcje: ReLU
 | tanh | 49221.07 | 50906.53 | 0.8180 | 0.8052 | 0.8084 |
 | sigmoid | 59534.01 | 58378.58 | 0.7337 | 0.7438 | 0.7437 |
 
-Najsłabszy wynik uzyskała funkcja Sigmoid średni test R^2 = 0.7438. Najciekawszym wynikiem tego etapu była rywalizacja między ReLU a Tanh. Funkcja ReLU jest standardem w głębokim uczeniu, jednak w naszym eksperymencie funkcja Tanh osiągnęła nieznacznie lepszy wynik  R^2 = 0.8052. Różnica RMSE wyniosła między funkcjami 775,93 na przewagę Tanh. Z tego względu to funkcja Tanh została wybrana do dalszej optymalizacji.
+Najsłabszy wynik uzyskała funkcja Sigmoid średni test R² = 0.7438. Najciekawszym wynikiem tego etapu była rywalizacja między ReLU a Tanh. Funkcja ReLU jest standardem w głębokim uczeniu, jednak w naszym eksperymencie funkcja Tanh osiągnęła nieznacznie lepszy wynik  R² = 0.8052. Różnica RMSE wyniosła między funkcjami 775,93 na przewagę Tanh. Z tego względu to funkcja Tanh została wybrana do dalszej optymalizacji.
 
 ### 3.2.5 Skala inicjalizacji wag
 
@@ -112,7 +112,7 @@ W tym etapie sprawdziliśmy, jak zmiana skali (mnożnika) początkowych wag wpł
 | 2.0 | 46981.72 | 52262.53 | 0.8342 | 0.7947 | 0.7927 |
 | 5.0 | 52829.00 | 63793.70 | 0.7903 | 0.6938 | 0.7189 |
 
-Najgorszy wynik uzyskaliśmy dla skali 0.01. Przy tak małych wagach sieć praktycznie się nie uczy, co widać po ujemnym R^2, oznaczającym błąd większy niż przy zwykłym zgadywaniu średniej ceny. Z kolei przy skali 5.0 wagi były zbyt duże, co widać na bardzo wysokim błędzie na zbiorze testowym. Najlepszą wartością okazała się skala 1.0, czyli standardowa. Uzyskała ona RMSE = 50906.53. Warto zauważyć, że skala 2.0 dała lepszy wynik na treningu 0.8342, jednak gorszy na testowym i różnica była spora bo aż 4 punkty procentowe R^2, może to świadczyć o tym że model zaczął się przeuczać. Dlatego do końcowego modelu wybraliśmy skalę 1.0.
+Najgorszy wynik uzyskaliśmy dla skali 0.01. Przy tak małych wagach sieć praktycznie się nie uczy, co widać po ujemnym R², oznaczającym błąd większy niż przy zwykłym zgadywaniu średniej ceny. Z kolei przy skali 5.0 wagi były zbyt duże, co widać na bardzo wysokim błędzie na zbiorze testowym. Najlepszą wartością okazała się skala 1.0, czyli standardowa. Uzyskała ona RMSE = 50906.53. Warto zauważyć, że skala 2.0 dała lepszy wynik na treningu 0.8342, jednak gorszy na testowym i różnica była spora bo aż 4 punkty procentowe R², może to świadczyć o tym że model zaczął się przeuczać. Dlatego do końcowego modelu wybraliśmy skalę 1.0.
 
 ### 3.2.6 Współczynnik uczenia
 
@@ -128,7 +128,7 @@ W szóstym kroku zbadaliśmy współczynnik uczenia. Testowane wartości: 0.01, 
 
 ![Wykres Współczynnika Uczenia](wykres_lr.png)
 
-Testy wykazały klasyczną zależność, zbyt wysoki współczynnik 0.01 prowadził do przeuczenia, różnica między R^2 na zbiorze treningowym a testowym wyniosła około 5 punktów procentowych. Natomiast zbyt niski współczynnik 0.0001 powodował niedouczenie wynik R^2 wyniósł 0.7687. Najlepszą wartością okazało się 0.001 z najniższym RMSE = 50906.53. Okazało się lepsze minimalnie od naszej wartości początkowej 0.005.
+Testy wykazały klasyczną zależność, zbyt wysoki współczynnik 0.01 prowadził do przeuczenia, różnica między R² na zbiorze treningowym a testowym wyniosła około 5 punktów procentowych. Natomiast zbyt niski współczynnik 0.0001 powodował niedouczenie wynik R² wyniósł 0.7687. Najlepszą wartością okazało się 0.001 z najniższym RMSE = 50906.53. Okazało się lepsze minimalnie od naszej wartości początkowej 0.005.
 
 ### 3.2.7 Liczba epok
 
@@ -144,7 +144,7 @@ Przedostatnim badanym parametrem była liczba epok. Testowane liczby epok: 10,30
 
 ![Wykres Epok](wykres_epoki.png)
 
-Wraz ze wzrostem liczby epok błąd na zbiorze testowym jak również na zbiorze treningowym malał. Najlepszy wynik na zbiorze testowym osiągneliśmy dla 200 epok R^2 = 0.8086. Ta wartość przekroczyła narzucony przez nas próg 0.03 różnicy w R^2 między zbiorem testowym, a treningowym. Widać, że w porównaniu do 100 epok, wzrost na zbiorze testowym jest niewielki tylko o 0.003, a na treningowym o 0.02, są to pierwsze sygnały przeuczenia. Odrzuciliśmy więc 200 epok, wybierając 100.
+Wraz ze wzrostem liczby epok błąd na zbiorze testowym jak również na zbiorze treningowym malał. Najlepszy wynik na zbiorze testowym osiągneliśmy dla 200 epok R² = 0.8086. Ta wartość przekroczyła narzucony przez nas próg 0.03 różnicy w R² między zbiorem testowym, a treningowym. Widać, że w porównaniu do 100 epok, wzrost na zbiorze testowym jest niewielki tylko o 0.003, a na treningowym o 0.02, są to pierwsze sygnały przeuczenia. Odrzuciliśmy więc 200 epok, wybierając 100.
 
 ### 3.2.8 Liczba powtórzeń
 
@@ -171,7 +171,7 @@ Po przejściu przez wszystkie etapy optymalizacji, ostateczna konfiguracja sieci
 - Liczba epok: 100
 - Liczba powtórzeń: 3
 
-Architektura ta pozwoliła na osiągnięcie wyniku na zbiorze testowym na poziomie R^2 = 0.8052 oraz błedu RMSE = 50906.53. Oznacza to, że nasz model jest w stanie wyjaśnić ponad 80 % wariancji ceny domu, co jest wynikiem satysfakcjonującym, jednak wciąż jest miejsce na poprawę. Przy zastosowaniu nowocześniejszego podejścia, użycie bibliotek takich jak TensorFlow lub PyTorch mogłoby pozwolić na znaczną poprawę wyników. Naszym małym sukcesem było to, że odrzucenie wartości parametru, który cechował się różnicą w R^2 między zbiorem treningowym a testowym większą niż 0.03 było słuszne i pozwoliło uniknąć przeuczenia. 
+Architektura ta pozwoliła na osiągnięcie wyniku na zbiorze testowym na poziomie R² = 0.8052 oraz błedu RMSE = 50906.53. Oznacza to, że nasz model jest w stanie wyjaśnić ponad 80 % wariancji ceny domu, co jest wynikiem satysfakcjonującym, jednak wciąż jest miejsce na poprawę. Przy zastosowaniu nowocześniejszego podejścia, użycie bibliotek takich jak TensorFlow lub PyTorch mogłoby pozwolić na znaczną poprawę wyników. Naszym małym sukcesem było to, że odrzucenie wartości parametru, który cechował się różnicą w R² między zbiorem treningowym a testowym większą niż 0.03 było słuszne i pozwoliło uniknąć przeuczenia. 
 
 ## 4. Random Forest
 
