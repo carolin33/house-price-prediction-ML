@@ -18,7 +18,7 @@ Do oceny jakości modeli wykorzystano miary MAE,RMSE oraz R². Dzięki nim możn
 
 ## 2. Przegląd literatury
 
-Analiza rozwiazań udostępniach na platformach takich jak kaggle czy github pokazuje, że w problemach estymacji cen nieruchomości w Kalifornii dominują algorytmy takie jak drzewa decyzyjne, Random Forest oraz XGBoost. Osiągają R^2 na poziomie 0.8-0.84. Rozwiązania oparte o sztuczne sieci neuronowe, są również popularne, ale badacze podkreślają, że aby pokonać regresję liniową wymagają one głębszych architektur oraz rygorystycznego skalowania danych.  
+Analiza rozwiązań udostępnionych na platformach takich jak kaggle czy github pokazuje, że w problemach estymacji cen nieruchomości w Kalifornii dominują algorytmy takie jak drzewa decyzyjne, Random Forest oraz XGBoost. Osiągają R^2 na poziomie 0.8-0.84. Rozwiązania oparte o sztuczne sieci neuronowe są również popularne, ale badacze podkreślają, że aby pokonać regresję liniową, wymagają one głębszych architektur oraz rygorystycznego skalowania danych.  
 
 Niezależnie od wybranej architektury, twórcy modeli są zgodni co do hierarchii zmiennych. Median_income jest kluczową cechą, która ma znacznie większą moc przewidywania niż parametry fizyczne budynków. Ciekawym wątkiem jest fakt, że zbiór danych California Housing ma ustaloną górną granicę ceny na 500 000$. Wielu badaczy z tego powodu decyduje się na usunięcie tych rekordów.
 
@@ -26,7 +26,7 @@ Niezależnie od wybranej architektury, twórcy modeli są zgodni co do hierarchi
 
 ### 3.1 Czym są Sztuczne Sieci Neuronowe
 
-Sztuczne Sieci Neuronowe (SSN) to zaawansowane modele matematyczne i algorytmiczne, inspirowane budową biologiczną ludzkiego mózgu. MLP składa się z warstwy wejściowej, ukrytej i wyjściowej. Proces uczenia sieci opiera się na dwóch głównych mechanizmach: propagacji wprzód i propagacji wstecz. W propagacji w przód dane przechodzą przez sieć, a każdy neuron sumuje iloczyn wejść i wag, po czym przepuszcza wynik przez nieliniową funkcje aktywacji. Funckje tę są w stanie modelować nieliniowe zależności między danymi. W propagacji wstecznej po wygenerowaniu wyniku, sieć oblicza błąd w stosunku do wartości rzeczywistej, a następnie wykorzystuje algorytmy optymalzacyjne takie jak spadek gradientu, sieć cofa się i koryguje wagi w taki sposób, aby w kolejnych epokach ten błąd był jak najmniejszy.
+Sztuczne Sieci Neuronowe (SSN) to zaawansowane modele matematyczne i algorytmiczne, inspirowane budową biologiczną ludzkiego mózgu. MLP składa się z warstwy wejściowej, ukrytej i wyjściowej. Proces uczenia sieci opiera się na dwóch głównych mechanizmach: propagacji wprzód i propagacji wstecz. W propagacji wprzód dane przechodzą przez sieć, a każdy neuron sumuje iloczyn wejść i wag, po czym przepuszcza wynik przez nieliniową funkcję aktywacji. Funckje te są w stanie modelować nieliniowe zależności między danymi. W propagacji wstecznej po wygenerowaniu wyniku, sieć oblicza błąd w stosunku do wartości rzeczywistej, a następnie wykorzystując algorytmy optymalizacyjne takie jak spadek gradientu, sieć cofa się i koryguje wagi w taki sposób, aby w kolejnych epokach ten błąd był jak najmniejszy.
 
 ### 3.2 Analiza wpływu parametrów na skuteczność działania sieci
 
@@ -40,7 +40,7 @@ Model bazowy:
 - Liczba epok = 100
 - Liczba powtórzeń = 3
 
-Badanie przeprowadzono, testując kolejno jeden parametr w każdym kroku, na ten który wykazał się najmniejszym RMSE. Po znalezieniu najlepszego wyniku, skrypt nadpisywał model bazowy optymalną wartością. Każdy eksperyment powtarzano trzykrotnie, co było absolutnym minimum, w celu uśrednienia wyników i wyeliminowania wpływu losowej inicjalizacji wag oraz podziału danych. Taki sposób oparty jedynie na minimalzacji błędu, miał jeden zasadniczy problem. Skrypt, działający automatycznie, mógł wybrać model przeuczony, co dostrzegliśmy na początku analizy. Z tego powodu wprowadzliśmy do kodu dodatkowy bezpiecznik. Zanim skrypt wybrał parametr z najniższym RMSE, sprawdzał różnicę między wynikiem R^2 na zbiorze treningowym a testowym. Ustaliliśmy próg na poziomie 3%. Jeśli różnica przekrzaczała tę wartość, model automatycznie był odrzucany.
+Badanie przeprowadzono, testując kolejno jeden parametr w każdym kroku, na ten który wykazał się najmniejszym RMSE. Po znalezieniu najlepszego wyniku, skrypt nadpisywał model bazowy optymalną wartością. Każdy eksperyment powtarzano trzykrotnie, co było absolutnym minimum, w celu uśrednienia wyników i wyeliminowania wpływu losowej inicjalizacji wag oraz podziału danych. Taki sposób oparty jedynie na minimalizacji błędu, miał jeden zasadniczy problem. Skrypt, działający automatycznie, mógł wybrać model przeuczony, co dostrzegliśmy na początku analizy. Z tego powodu wprowadziliśmy do kodu dodatkowy bezpiecznik. Zanim skrypt wybrał parametr z najniższym RMSE, sprawdzał różnicę między wynikiem R^2 na zbiorze treningowym a testowym. Ustaliliśmy próg na poziomie 3%. Jeśli różnica przekraczała tę wartość, model automatycznie był odrzucany.
 
 ### 3.2.1 Wielkość próby testowej (test_ratio)
 
@@ -56,9 +56,9 @@ W pierwszym kroku zbadaliśmy wpływ proporcji podziału danych na zbiór ucząc
 
 Najlepszym wynikiem okazała się proporcja 0.15, osiągając najniższy błąd na zbiorze testowym RMSE = 54361.03. Choć w uczeniu maszynowym najczęściej stosuje się podział 80/20, który u nas zdobył niewiele gorszy wynik RMSE = 55568.48, to w tym eksperymencie zmniejszenie zbioru testowego, prawdopodobnie pozwoliło na zasilenie sieci dodatkową pulą danych treningowych. Powiększenie zbioru testowego do wartości 0.3, 0.4 powodowało spadek jakości modelu. Ze względu na te wyniki, to właśnie wartość 0.15 została wybrana do dalszych eksperymentów.
 
-### 3.2.2 Głębokość sieci liczba wartw ukrytych
+### 3.2.2 Głębokość sieci liczba warstw ukrytych
 
-W drugim etapie badaliśmy wpływ głebokości sieci. Testowaliśmy od 0 do 4 wartw ukrytych o stałej liczbie neuronów 16.
+W drugim etapie badaliśmy wpływ głebokości sieci. Testowaliśmy od 0 do 4 warstw ukrytych o stałej liczbie neuronów 16.
 
 | Wartość parametru | Śr. RMSE (Trening) | Śr. RMSE (Test) | Śr. R² (Trening) | Śr. R² (Test) | Najlepsze R² (Test) |
 | --- | --- | --- | --- | --- | --- |
@@ -68,9 +68,9 @@ W drugim etapie badaliśmy wpływ głebokości sieci. Testowaliśmy od 0 do 4 wa
 | [16, 16, 16] | 51461.20 | 52513.99 | 0.8010 | 0.7927 | 0.7933 |
 | [16, 16, 16, 16] | 50824.52 | 52168.90 | 0.8059 | 0.7954 | 0.7962 |
 
-![Wykres Głebokości](wykres_depth.png)
+![Wykres głębokości](wykres_depth.png)
 
-Przy braku wartsw ukrytych widać, że model osiąga najsłabszy wynik i wyjaśnia jedynie 64% zmienności ceny.
+Przy braku warstw ukrytych widać, że model osiąga najsłabszy wynik i wyjaśnia jedynie 64% zmienności ceny.
 Wprowadzenie już pierwszej warstwy ukrytej [16] znacząco poprawia wyniki, skok 12 punktów procentowych R^2. Kolejne warstwy poprawiają wyniki, ale nie tak drastycznie jak pierwszy przeskok. Zwycięzcą okazał się model z 4 warstwami ukrytymi, który osiągnął najlepszy wynik 52168.90 RMSE, dlatego też ta architektura 4-warstwowa została wybrana do dalszej optymalizacji.
 
 ### 3.2.3 Topologia sieci 
@@ -85,11 +85,11 @@ W trzecim etapie badania testowaliśmy rozkład neuronów w naszej 4-warstwowej 
 | [64, 32, 16, 8] | 47788.03 | 51787.94 | 0.8284 | 0.7984 | 0.7978 |
 | [32, 32, 32, 32] | 48375.93 | 51682.46 | 0.8242 | 0.7992 | 0.8002 |
 
-Wąska topologia sieci [8, 4, 4, 2] okazała się zdecydowanie zbyt wąska, nie była w stanie przetworzyć naszych danych, osiągając wynik 50% R^2. Minimalne zwiększeni do [16, 8, 4, 2] podniosło wynik o 28 punktów procentowych R^2. Architektura [32, 32, 32, 32] osiągnęła najlepszy wynik R^2 = 0.7992, przekraczając w pojedynczej próbie barierę 0.8. Pozostałe warianty, jak [32,16,8,4] i [64,32,16,8] uzyskały zbliżone, ale ostatecznie słabsze wyniki pod względem RMSE. Ostatenie algorytm wybrał układ o stałej szerokości [32,32,32,32], ponieważ miał on najlepszą celność RMSE = 51682.46.
+Wąska topologia sieci [8, 4, 4, 2] okazała się zdecydowanie zbyt wąska, nie była w stanie przetworzyć naszych danych, osiągając wynik 50% R^2. Minimalne zwiększenie do [16, 8, 4, 2] podniosło wynik o 28 punktów procentowych R^2. Architektura [32, 32, 32, 32] osiągnęła najlepszy wynik R^2 = 0.7992, przekraczając w pojedynczej próbie barierę 0.8. Pozostałe warianty, jak [32,16,8,4] i [64,32,16,8] uzyskały zbliżone, ale ostatecznie słabsze wyniki pod względem RMSE. Ostatecznie algorytm wybrał układ o stałej szerokości [32,32,32,32], ponieważ miał on najlepszą celność RMSE = 51682.46.
 
 ### 3.2.4 Funkcja aktywacji
 
-W czwartym kroku sprawdziliśmy, funkcję aktywacji. Testowaliśmy funkcje: ReLU, Leaky ReLU,, Tanh i Sigmoid.
+W czwartym kroku sprawdziliśmy, funkcję aktywacji. Testowaliśmy funkcje: ReLU, Leaky ReLU, Tanh i Sigmoid.
 
 | Wartość parametru | Śr. RMSE (Trening) | Śr. RMSE (Test) | Śr. R² (Trening) | Śr. R² (Test) | Najlepsze R² (Test) |
 |---|---|---|---|---|---|
@@ -98,7 +98,7 @@ W czwartym kroku sprawdziliśmy, funkcję aktywacji. Testowaliśmy funkcje: ReLU
 | tanh | 49221.07 | 50906.53 | 0.8180 | 0.8052 | 0.8084 |
 | sigmoid | 59534.01 | 58378.58 | 0.7337 | 0.7438 | 0.7437 |
 
-Najsłabszy wynik uzyskała funkcja Sigmoid śrendi test R^2 = 0.7438. Najciekawszym wynikiem tego etapu była rywalizacja między ReLU a Tanh. Funkcja ReLU jest standardem w głębokim uczeniu, jednak w naszym eksperymencie funkcja Tanh osiągneła nieznacznie lepszy wynik  R^2 = 0.8052. Różnica RMSE wyniosła między funkcjami 775,93 na przewagę Tanh. Z tego względu to funkcja Tanh została wybrana do dalszej optymalizacji.
+Najsłabszy wynik uzyskała funkcja Sigmoid średni test R^2 = 0.7438. Najciekawszym wynikiem tego etapu była rywalizacja między ReLU a Tanh. Funkcja ReLU jest standardem w głębokim uczeniu, jednak w naszym eksperymencie funkcja Tanh osiągnęła nieznacznie lepszy wynik  R^2 = 0.8052. Różnica RMSE wyniosła między funkcjami 775,93 na przewagę Tanh. Z tego względu to funkcja Tanh została wybrana do dalszej optymalizacji.
 
 ### 3.2.5 Skala inicjalizacji wag
 
@@ -112,7 +112,7 @@ W tym etapie sprawdziliśmy, jak zmiana skali (mnożnika) początkowych wag wpł
 | 2.0 | 46981.72 | 52262.53 | 0.8342 | 0.7947 | 0.7927 |
 | 5.0 | 52829.00 | 63793.70 | 0.7903 | 0.6938 | 0.7189 |
 
-Najgorszy wyniki uzyskaliśym dla skali 0.01. Przy tak małych wagach sieć praktycznie się nie uczy, co widać po ujemnym R^2, oznaczającym błąd większy niż przy zwykłym zgadywaniu średniej ceny. Z kolei przy skali 5.0 wagi były zbyt duże, co widać na bardzo wysokim błędzie na zbiorze testowym. Najlepszym wartością okazała się skala 1.0, czyli standardowa. Uzyskała ona RMSE = 50906.53. Warto zauważyć, że skala 2.0 dała lepszy wynik na treningu 0.8342, jednak gorszy na testowym i różnica była spora bo aż 4 punkty procentowe R^2, może to świadczyć o tym że model zaczął się przeuczać. Dlatego do końcowego modelu wybraliśmy skalę 1.0.
+Najgorszy wynik uzyskaliśmy dla skali 0.01. Przy tak małych wagach sieć praktycznie się nie uczy, co widać po ujemnym R^2, oznaczającym błąd większy niż przy zwykłym zgadywaniu średniej ceny. Z kolei przy skali 5.0 wagi były zbyt duże, co widać na bardzo wysokim błędzie na zbiorze testowym. Najlepszą wartością okazała się skala 1.0, czyli standardowa. Uzyskała ona RMSE = 50906.53. Warto zauważyć, że skala 2.0 dała lepszy wynik na treningu 0.8342, jednak gorszy na testowym i różnica była spora bo aż 4 punkty procentowe R^2, może to świadczyć o tym że model zaczął się przeuczać. Dlatego do końcowego modelu wybraliśmy skalę 1.0.
 
 ### 3.2.6 Współczynnik uczenia
 
@@ -144,11 +144,11 @@ Przedostatnim badanym parametrem była liczba epok. Testowane liczby epok: 10,30
 
 ![Wykres Epok](wykres_epoki.png)
 
-Wraz ze wzrostem liczby epok błąd na zbiorze testowym jak również na zbiorze treningowym malał. Najlepszy wynik na zbiorze testowym osiągneliśmy dla 200 epok R^2 = 0.8086. Ta wartość przekroczyła narzucony przez nas próg 0.03 różnicy w R^2 między zbiorem testowym, a treningowym. Widać, że w porównaniu do 100 epok, wzrost na zbiorze testowym jest niewielki tylko o 0.003, a na treningowym o 0.02, są to pierwsze sygnały przeucznia. Odrzuciliśmy więc 200 epok, wybierając 100.
+Wraz ze wzrostem liczby epok błąd na zbiorze testowym jak również na zbiorze treningowym malał. Najlepszy wynik na zbiorze testowym osiągneliśmy dla 200 epok R^2 = 0.8086. Ta wartość przekroczyła narzucony przez nas próg 0.03 różnicy w R^2 między zbiorem testowym, a treningowym. Widać, że w porównaniu do 100 epok, wzrost na zbiorze testowym jest niewielki tylko o 0.003, a na treningowym o 0.02, są to pierwsze sygnały przeuczenia. Odrzuciliśmy więc 200 epok, wybierając 100.
 
 ### 3.2.8 Liczba powtórzeń
 
-W otatnim etapie przeanalizowaliśmy wpływ uśredniania wyników na ocene jakości modelu. Testowana liczba powtórzeń: 1,3,5,10.
+W ostatnim etapie przeanalizowaliśmy wpływ uśredniania wyników na ocenę jakości modelu. Testowana liczba powtórzeń: 1,3,5,10.
 
 | Wartość parametru | Śr. RMSE (Trening) | Śr. RMSE (Test) | Śr. R² (Trening) | Śr. R² (Test) | Najlepsze R² (Test) |
 |---|---|---|---|---|---|
@@ -157,7 +157,7 @@ W otatnim etapie przeanalizowaliśmy wpływ uśredniania wyników na ocene jako�
 | 5 | 49400.75 | 50715.63 | 0.8168 | 0.8054 | 0.8126 |
 | 10 | 49438.36 | 51486.73 | 0.8162 | 0.8014 | 0.8126 |
 
-Wynik dla zalednie 1 powtórzenia może się wydawać najlepszy RMSE = 49672.24, ale w praktyce jest to szcześliwy wylosowanie inicjalizacji wag lub/i podziału danych. Zwiększenie liczby powtórzeń do 3, 5 i 10 urealnia wyniki, niwelując wpływ przypadkowości. Różnice między wariantami są już znaczenie miejsze. Początkowe założenie o wykonaniu minumum 3 powtórzeń w każdym kroku było słuszne, jest to liczba, która pozwoliła zachować balans pomiędzy istotnością statycznyną, a czasem wykonywania skryptu.
+Wynik dla zaledwie 1 powtórzenia może się wydawać najlepszy RMSE = 49672.24, ale w praktyce jest to szczęśliwe wylosowanie inicjalizacji wag lub/i podziału danych. Zwiększenie liczby powtórzeń do 3, 5 i 10 urealnia wyniki, niwelując wpływ przypadkowości. Różnice między wariantami są już znacznie mniejsze. Początkowe założenie o wykonaniu minimum 3 powtórzeń w każdym kroku było słuszne, jest to liczba, która pozwoliła zachować balans pomiędzy istotnością statystyczną, a czasem wykonywania skryptu.
 
 ### 3.3 Podsumowanie i Wnioski
 
@@ -165,7 +165,7 @@ Po przejściu przez wszystkie etapy optymalizacji, ostateczna konfiguracja sieci
 
 - Proporcja zbioru testowego: 0.15
 - Głębokość i topologia: 4 warstwy ukryte [32,32,32,32]
-- Funckja aktywacji: Tanh
+- Funkcja aktywacji: Tanh
 - Skala inicjalizacji wag: 1.0
 - Współczynnik uczenia: 0.001
 - Liczba epok: 100
