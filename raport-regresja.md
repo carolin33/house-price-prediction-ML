@@ -483,12 +483,12 @@ Parametr `C` kontroluje stopień dopasowania modelu.
 
 | `C` | R² |
 |---:|---:|
-| 0.1 | -0.06 |
-| 1   | -0.05 |
-| 10  | -0.01 |
-| 100 | 0.28 |
+| 0.1 | -0.0561 |
+| 1   | -0.0512 |
+| 10  | -0.0064 |
+| 100 | 0.287 |
 
-Najlepszy wynik uzyskano dla `C = 100`. Wraz ze wzrostem wartości parametru model lepiej dopasowywał się do danych.
+Najlepszy wynik uzyskano dla `C = 100`. Wraz ze wzrostem wartości parametru model lepiej dopasowywał się do danych co pokazuje wyższy wskaźnik R².
 
 ---
 
@@ -496,18 +496,22 @@ Najlepszy wynik uzyskano dla `C = 100`. Wraz ze wzrostem wartości parametru mod
 
 | `kernel` | R² |
 |---|---:|
-| linear | 0.62 |
-| rbf | 0.29 |
-| poly | 0.18 |
-| sigmoid | 0.45 |
+| linear | 0.6166 |
+| rbf | 0.287 |
+| poly | 0.177 |
+| sigmoid | 0.4511 |
 
-Najlepszy wynik uzyskano dla jądra **linear**. Oznacza to, że w tym przypadku zależności w danych były w dużej mierze liniowe.
+Najlepszy wynik uzyskano dla jądra **linear**, co sugeruje, że zależności pomiędzy zmiennymi miały głównie charakter liniowy. Pozostałe jądra osiągnęły niższe wartości R², przez co gorzej dopasowywały model do danych.
 
 ---
 
 ### 6.2.3. Strojenie parametrów `gamma` i `epsilon`
 
-Zmiany parametrów `gamma` oraz `epsilon` nie miały istotnego wpływu na wynik modelu – wartości R² pozostawały praktycznie niezmienne.
+Parametr `gamma` określa wpływ pojedynczych obserwacji na model, natomiast `epsilon` odpowiada za szerokość marginesu błędu akceptowanego przez model SVR.
+Parametry były testowane dla kilku różnych wartości w celu sprawdzenia ich wpływu na jakość predykcji.
+
+Zmiany parametrów `gamma` oraz `epsilon` nie miały istotnego wpływu na jakość modelu. Dla wszystkich testowanych wartości uzyskano bardzo podobne wyniki R², MAE oraz RMSE.
+Największy wpływ na skuteczność modelu miał wybór jądra (`kernel`) oraz parametru `C`.
 
 ---
 
@@ -524,6 +528,8 @@ Zmiany parametrów `gamma` oraz `epsilon` nie miały istotnego wpływu na wynik 
 
 ### 6.2.5. Ocena modelu na zbiorze testowym
 
+Po wybraniu najlepszych parametrów model został wytrenowany na zbiorze treningowym, a następnie oceniony na zbiorze testowym.
+
 | Zbiór | R² | MAE | RMSE |
 |---|---:|---:|---:|
 | Train | 0.62 | 49031 | 71146 |
@@ -531,7 +537,7 @@ Zmiany parametrów `gamma` oraz `epsilon` nie miały istotnego wpływu na wynik 
 
 Model osiągnął umiarkowaną jakość dopasowania. Wartość R² na poziomie około **0.60** oznacza, że model wyjaśnia około 60% zmienności danych.
 
-Błędy predykcji (MAE i RMSE) są stosunkowo wysokie, co wskazuje na ograniczoną dokładność modelu. Niewielka różnica między wynikami train i test sugeruje jednak, że model nie jest silnie przeuczony.
+Wartości MAE i RMSE pokazują, że błędy predykcji są nadal dość wysokie. Niewielka różnica pomiędzy wynikami dla zbioru treningowego i testowego sugeruje jednak, że model nie jest mocno przeuczony i dość dobrze radzi sobie z nowymi danymi.
 
 ---
 
@@ -545,7 +551,7 @@ Gradient Boosting to metoda oparta na wielu drzewach decyzyjnych budowanych sekw
 
 ### 7.2. Strojenie hiperparametrów modelu Gradient Boosting
 
-Strojenie wykonano metodą greedy.
+Przeprowadzono strojenie hiperparametrów modelu w celu znalezienia konfiguracji dającej najlepsze wyniki.
 
 ---
 
@@ -558,11 +564,14 @@ Strojenie wykonano metodą greedy.
 | 200 | 0.8020 | 35342 | 51379 |
 | 300 | 0.8117 | 34256 | 50108 |
 
+Wraz ze wzrostem liczby estymatorów poprawiała się jakość modelu. Rosły wartości R², a błędy MAE i RMSE malały.
 Najlepszy wynik uzyskano dla `n_estimators = 300`.
 
 ---
 
 ### 7.2.2. Strojenie parametru `learning_rate`
+
+Parametr określa, jak duże zmiany model wprowadza podczas kolejnych etapów uczenia.
 
 | `learning_rate` | R² | MAE | RMSE |
 |---:|---:|---:|---:|
@@ -584,7 +593,8 @@ Najlepszy wynik uzyskano dla `learning_rate = 0.2`.
 | 4 | 0.8277 | 32032 | 47929 |
 | 5 | 0.8285 | 31670 | 47816 |
 
-Najlepszy wynik uzyskano dla `max_depth = 5`.
+Parametr `max_depth` kontroluje poziom złożoności drzew w modelu.
+Większe wartości poprawiały wyniki modelu. Najlepszy rezultat uzyskano dla wartości 5.
 
 ---
 
@@ -597,7 +607,8 @@ Najlepszy wynik uzyskano dla `max_depth = 5`.
 | 0.9 | 0.8280 | 31868 | 47879 |
 | 1.0 | 0.8285 | 31670 | 47816 |
 
-Najlepszy wynik uzyskano dla `subsample = 1.0`.
+Parametr `subsample` określa, jaka część danych jest wykorzystywana podczas uczenia kolejnych drzew.
+Wraz ze wzrostem wartości, model osiągał nieco lepsze wyniki. Najlepszy rezultat uzyskano dla `subsample = 1.0`.
 
 ---
 
@@ -620,7 +631,6 @@ Najlepszy wynik uzyskano dla `subsample = 1.0`.
 | Test | 0.8356 | 30623 | 46587 |
 
 Model osiągnął bardzo wysoką jakość dopasowania. Na zbiorze testowym wyjaśnia około **84% zmienności cen nieruchomości**, co oznacza bardzo dobrą skuteczność.
-
 Widać różnicę między train a test, co może wskazywać na lekkie przeuczenie, jednak wynik testowy nadal pozostaje bardzo dobry.
 
 ---
@@ -670,10 +680,10 @@ Największe błędy wystąpiły w modelu **SVM**, co wskazuje na jego ograniczon
 
 Na podstawie przeprowadzonej analizy można stwierdzić, że:
 
-- **Gradient Boosting** był najlepszym modelem – osiągnął najwyższe R² oraz najniższe błędy,
-- **Random Forest** uzyskał bardzo zbliżone wyniki i również dobrze radził sobie z danymi,
-- **KNN** dawał umiarkowane rezultaty, ale był podatny na przeuczenie,
-- **SVM** okazał się najsłabszy w tym zadaniu, prawdopodobnie ze względu na ograniczoną zdolność do modelowania złożonych zależności,
-- modele drzewiaste (Gradient Boosting, Random Forest) najlepiej radziły sobie z analizowanym problemem.
+- **Gradient Boosting** był najlepszym modelem – osiągnął najwyższe R² oraz najniższe błędy
+- **Random Forest** uzyskał bardzo zbliżone wyniki i również dobrze radził sobie z danymi
+- **KNN** dawał umiarkowane rezultaty, ale był podatny na przeuczenie
+- **SVM** osiągnął najniższe wartości R² oraz największe błędy predykcji
+- modele drzewiaste (Gradient Boosting, Random Forest) najlepiej radziły sobie z analizowanym problemem
 
 Można więc uznać, że dla tego typu danych najbardziej odpowiednie są modele oparte na drzewach decyzyjnych, które potrafią uchwycić nieliniowe zależności między zmiennymi.
