@@ -23,7 +23,7 @@ plt.rcParams.update({
     "grid.alpha":        0.3,
     "figure.dpi":        150,
 })
-ACCENT  = "#2563eb"   # niebieski — inny niż RF (zielony) dla łatwego rozróżnienia w raporcie
+ACCENT  = "#2563eb"  
 ACCENT2 = "#c0392b"
 NEUTRAL = "#2c3e50"
 
@@ -45,7 +45,7 @@ num_cols = X.select_dtypes(include=[np.number]).columns.tolist()
 cat_cols = X.select_dtypes(exclude=[np.number]).columns.tolist()
 
 # ============================================================
-# 3. TRAIN / TEST SPLIT (20% chowane do szuflady)
+# 3. TRAIN / TEST SPLIT 
 # ============================================================
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
@@ -74,7 +74,7 @@ preprocessor = ColumnTransformer(
 )
 
 # ============================================================
-# 5. WALIDACJA KRZYŻOWA (tylko na TRAIN)
+# 5. WALIDACJA KRZYŻOWA 
 # ============================================================
 cv = KFold(n_splits=5, shuffle=True, random_state=42)
 
@@ -194,84 +194,8 @@ print(metrics_df.to_string(index=False))
 
 # ============================================================
 # 8. WYKRESY DO RAPORTU
-# ============================================================
 
-# -----------------------------------------------------------
-# WYKRES 1: Scatter Predicted vs Actual (test set)
-# -----------------------------------------------------------
-fig, ax = plt.subplots(figsize=(7, 6))
 
-ax.scatter(y_test, y_pred_test,
-           alpha=0.25, s=10, color=ACCENT, rasterized=True, label="Test set")
-
-lims = [min(y_test.min(), y_pred_test.min()),
-        max(y_test.max(), y_pred_test.max())]
-ax.plot(lims, lims, "--", color=NEUTRAL, lw=1.5, label="Idealna predykcja")
-
-r2   = r2_score(y_test, y_pred_test)
-mae  = mean_absolute_error(y_test, y_pred_test)
-rmse = np.sqrt(mean_squared_error(y_test, y_pred_test))
-
-ax.text(0.05, 0.93,
-        f"R² = {r2:.4f}\nMAE = ${mae:,.0f}\nRMSE = ${rmse:,.0f}",
-        transform=ax.transAxes, fontsize=10, va="top",
-        bbox=dict(boxstyle="round,pad=0.4", fc="white", alpha=0.8))
-
-ax.xaxis.set_major_formatter(FuncFormatter(thousands))
-ax.yaxis.set_major_formatter(FuncFormatter(thousands))
-ax.set_xlabel("Rzeczywista wartość mediany domu")
-ax.set_ylabel("Predykcja modelu")
-ax.set_title("Predykcja vs Rzeczywistość — KNN (test set)", fontweight="bold")
-ax.legend(framealpha=0.7)
-plt.tight_layout()
-plt.savefig("knn_wykres_01_scatter_pred_vs_actual.png", bbox_inches="tight")
-plt.close()
-print("Zapisano: knn_wykres_01_scatter_pred_vs_actual.png")
-
-# -----------------------------------------------------------
-# WYKRES 2: Residuals vs Predicted
-# -----------------------------------------------------------
-residuals = y_test.values - y_pred_test
-
-fig, ax = plt.subplots(figsize=(8, 5))
-ax.scatter(y_pred_test, residuals,
-           alpha=0.25, s=10, color=ACCENT2, rasterized=True)
-ax.axhline(0, color=NEUTRAL, lw=1.5, linestyle="--")
-ax.axhline( residuals.std(), color=NEUTRAL, lw=0.8, linestyle=":", alpha=0.6)
-ax.axhline(-residuals.std(), color=NEUTRAL, lw=0.8, linestyle=":", alpha=0.6)
-ax.fill_between([y_pred_test.min(), y_pred_test.max()],
-                -residuals.std(), residuals.std(),
-                alpha=0.07, color=NEUTRAL)
-
-ax.xaxis.set_major_formatter(FuncFormatter(thousands))
-ax.yaxis.set_major_formatter(FuncFormatter(thousands))
-ax.set_xlabel("Predykcja modelu")
-ax.set_ylabel("Residuum (rzeczywista − predykcja)")
-ax.set_title("Residua — KNN (test set)", fontweight="bold")
-ax.text(0.02, 0.97, f"±1 std = ±${residuals.std():,.0f}",
-        transform=ax.transAxes, fontsize=9, va="top", color="grey")
-plt.tight_layout()
-plt.savefig("knn_wykres_02_residuals.png", bbox_inches="tight")
-plt.close()
-print("Zapisano: knn_wykres_02_residuals.png")
-
-# -----------------------------------------------------------
-# WYKRES 3: Histogram residuów
-# -----------------------------------------------------------
-fig, ax = plt.subplots(figsize=(7, 5))
-ax.hist(residuals, bins=60, color=ACCENT, edgecolor="white", linewidth=0.3)
-ax.axvline(0, color=ACCENT2, lw=2, linestyle="--", label="Zero")
-ax.axvline(residuals.mean(), color=NEUTRAL, lw=1.5,
-           linestyle=":", label=f"Średnia = ${residuals.mean():,.0f}")
-ax.set_xlabel("Residuum ($)")
-ax.set_ylabel("Liczba próbek")
-ax.set_title("Rozkład residuów — KNN (test set)", fontweight="bold")
-ax.xaxis.set_major_formatter(FuncFormatter(thousands))
-ax.legend()
-plt.tight_layout()
-plt.savefig("knn_wykres_03_histogram_residuals.png", bbox_inches="tight")
-plt.close()
-print("Zapisano: knn_wykres_03_histogram_residuals.png")
 
 # -----------------------------------------------------------
 # WYKRES 4: R² vs n_neighbors (kluczowy dla KNN)

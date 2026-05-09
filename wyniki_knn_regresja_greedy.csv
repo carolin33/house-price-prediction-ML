@@ -1,0 +1,13 @@
+parametr,wartosc,r2_mean,r2_std,mae_mean,mae_std,rmse_mean,rmse_std,params_snapshot
+n_neighbors,1,0.5706,0.0083,49488.76,829.95,75663.27,1479.3,"{'n_neighbors': 1, 'weights': 'uniform', 'metric': 'minkowski', 'p': 2, 'n_jobs': 1}"
+n_neighbors,3,0.6929,0.014,42873.72,732.45,63972.94,1588.24,"{'n_neighbors': 3, 'weights': 'uniform', 'metric': 'minkowski', 'p': 2, 'n_jobs': 1}"
+n_neighbors,5,0.7149,0.0129,41422.58,634.47,61637.96,1490.76,"{'n_neighbors': 5, 'weights': 'uniform', 'metric': 'minkowski', 'p': 2, 'n_jobs': 1}"
+n_neighbors,10,0.7256,0.0121,40923.8,777.99,60470.39,1645.25,"{'n_neighbors': 10, 'weights': 'uniform', 'metric': 'minkowski', 'p': 2, 'n_jobs': 1}"
+n_neighbors,20,0.7205,0.0126,41758.42,862.14,61036.36,1717.55,"{'n_neighbors': 20, 'weights': 'uniform', 'metric': 'minkowski', 'p': 2, 'n_jobs': 1}"
+n_neighbors,50,0.7,0.01,43893.73,759.62,63235.0,1488.3,"{'n_neighbors': 50, 'weights': 'uniform', 'metric': 'minkowski', 'p': 2, 'n_jobs': 1}"
+weights,uniform,0.7256,0.0121,40923.8,777.99,60470.39,1645.25,"{'n_neighbors': 10, 'weights': 'uniform', 'metric': 'minkowski', 'p': 2, 'n_jobs': 1}"
+weights,distance,0.7302,0.0124,40447.98,800.93,59959.01,1683.61,"{'n_neighbors': 10, 'weights': 'distance', 'metric': 'minkowski', 'p': 2, 'n_jobs': 1}"
+metric,euclidean,0.7302,0.0124,40447.98,800.93,59959.01,1683.61,"{'n_neighbors': 10, 'weights': 'distance', 'metric': 'euclidean', 'p': 2, 'n_jobs': 1}"
+metric,manhattan,0.7418,0.0113,39676.71,805.5,58657.44,1647.2,"{'n_neighbors': 10, 'weights': 'distance', 'metric': 'manhattan', 'p': 2, 'n_jobs': 1}"
+metric,chebyshev,0.7145,0.0133,41790.91,867.94,61676.51,1709.88,"{'n_neighbors': 10, 'weights': 'distance', 'metric': 'chebyshev', 'p': 2, 'n_jobs': 1}"
+metric,minkowski,0.7302,0.0124,40447.98,800.93,59959.01,1683.61,"{'n_neighbors': 10, 'weights': 'distance', 'metric': 'minkowski', 'p': 2, 'n_jobs': 1}"
