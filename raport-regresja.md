@@ -637,12 +637,13 @@ Widać różnicę między train a test, co może wskazywać na lekkie przeuczeni
 
 ## 8. Porównanie modeli
 
-W projekcie porównano cztery modeli:
+W projekcie porównano pięć modeli:
 
-- Random Forest,
-- KNN,
-- Gradient Boosting,
-- SVM.
+- MLP
+- Random Forest
+- KNN
+- Gradient Boosting
+- SVM
 
 Porównanie wykonano na podstawie wyników uzyskanych na zbiorze testowym.
 
@@ -652,23 +653,27 @@ Porównanie wykonano na podstawie wyników uzyskanych na zbiorze testowym.
 |---|---:|
 | Gradient Boosting | 0.8356 |
 | Random Forest | 0.8225 |
+| MLP | 0.8052 |
 | KNN | 0.7378 |
 | SVM | 0.6022 |
 
 Najlepszy wynik uzyskał model **Gradient Boosting**, który wyjaśnia około **84% zmienności danych**. Bardzo zbliżony wynik osiągnął **Random Forest**.
 
-Model **KNN** osiągnął średnią jakość, natomiast **SVM** uzyskał najsłabszy wynik spośród analizowanych modeli.
+Model **MLP** także uzyskał dobre wyniki i osiągnął wartość R² powyżej 0.80, jednak był nieco słabszy od modeli drzewiastych.
+
+Model **KNN** osiągnął umiarkowaną jakość, natomiast **SVM** uzyskał najsłabszy wynik spośród analizowanych modeli.
 
 ---
 
 ### 8.2. Porównanie błędów predykcji
 
-| Model | MAE | RMSE |
+| Model | RMSE | MAE |
 |---|---:|---:|
-| Gradient Boosting | 30623 | 46587 |
-| Random Forest | 31416 | 48415 |
-| KNN | 38946 | 58834 |
-| SVM | 49198 | 72474 |
+| Gradient Boosting | 46587 | 30623 |
+| Random Forest | 48415 | 31416 |
+| MLP | 50907 | — |
+| KNN | 58834 | 38946 |
+| SVM | 72474 | 49198 |
 
 Najmniejsze błędy uzyskał model **Gradient Boosting**, co potwierdza jego wysoką skuteczność.
 
@@ -682,6 +687,7 @@ Na podstawie przeprowadzonej analizy można stwierdzić, że:
 
 - **Gradient Boosting** był najlepszym modelem – osiągnął najwyższe R² oraz najniższe błędy
 - **Random Forest** uzyskał bardzo zbliżone wyniki i również dobrze radził sobie z danymi
+- **MLP** osiągnął dobry wynik, ale był nieco słabszy od modeli drzewiastych
 - **KNN** dawał umiarkowane rezultaty, ale był podatny na przeuczenie
 - **SVM** osiągnął najniższe wartości R² oraz największe błędy predykcji
 - modele drzewiaste (Gradient Boosting, Random Forest) najlepiej radziły sobie z analizowanym problemem
